@@ -29,10 +29,25 @@
         * Result
 */
 
-#include "patient.hpp"
+#include <cstdlib>
+#include <iostream>
+
+// #include "patient.hpp"
 
 int main() {
-    Patient patient = Patient();
+    std::system("chcp 65001");
+
+    std::cout << "┌─────────────────────────────────────────┐" << std::endl;
+    std::cout << "│                                         │" << std::endl;
+    std::cout << "│  This box uses proper typographic       │" << std::endl;
+    std::cout << "│  characters for a clean, polished look. │" << std::endl;
+    std::cout << "│                                         │" << std::endl;
+    std::cout << "│  • Em dashes — like this — for          │" << std::endl;
+    std::cout << "│    punctuation                          │" << std::endl;
+    std::cout << "│  • Box-drawing characters for           │" << std::endl;
+    std::cout << "│    smooth corners and lines             │" << std::endl;
+    std::cout << "│                                         │" << std::endl;
+    std::cout << "└─────────────────────────────────────────┘" << std::endl;
 
     return 0;
 }
