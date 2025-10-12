@@ -14,10 +14,7 @@ typedef unsigned int Id;
 typedef char PhoneNumber[PHONE_NUMBER_LENGTH];
 typedef std::string Email;
 
-class Patient {
-   private:
-    static Id next_id;
-
+typedef struct _patient {
     Id id;
     std::string name;
     std::string last_name;
@@ -29,8 +26,8 @@ class Patient {
 
     BloodType blood_type;
     std::vector<Appointment> medical_record;
+} Patient;
 
-   public:
-    Patient();
-    ~Patient();
-};
+Patient registerPatient();
+void printPatient(const Patient& patient);
+void updatePatientInfo(Patient& patient);

@@ -1,3 +1,9 @@
 
+# IDE
+.vscode
+
+# Build
+**/build/
+
 *.o
 *.exe

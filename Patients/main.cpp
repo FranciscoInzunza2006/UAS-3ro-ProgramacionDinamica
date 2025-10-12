@@ -30,25 +30,12 @@
 */
 
 #include <cstdlib>
-#include <iostream>
 
-// #include "patient.hpp"
+#include "menu.hpp"
 
 int main() {
-    std::system("chcp 65001 && cls");
-
-    std::cout << "┌─────────────────────────────────────────┐" << std::endl;
-    std::cout << "│                                         │" << std::endl;
-    std::cout << "│  This box uses proper typographic       │" << std::endl;
-    std::cout << "│  characters for a clean, polished look. │" << std::endl;
-    std::cout << "│                                         │" << std::endl;
-    std::cout << "│  • Em dashes — like this — for          │" << std::endl;
-    std::cout << "│    punctuation                          │" << std::endl;
-    std::cout << "│  • Box-drawing characters for           │" << std::endl;
-    std::cout << "│    smooth corners and lines             │" << std::endl;
-    std::cout << "│                                         │" << std::endl;
-    std::cout << "├─────────────────────────────────────────┤" << std::endl;
-    std::cout << "└─────────────────────────────────────────┘" << std::endl;
+    system("chcp 65001 && cls");
+    systemMenu();
 
     return 0;
 }
