@@ -78,14 +78,16 @@ void patientMenu(Patient& patient) {
     separator();
     int action = getIntRange(1, 4);
 
-    separator();
-    switch (action) {
-        case 1:
-            updatePatientInfo(patient);
-            separator();
-            printPatient(patient);
-            break;
-            // TODO: Implement other functions
+    if (action != 4) {
+        switch (action) {
+            case 1:
+                updatePatientInfo(patient);
+                separator();
+                printPatient(patient);
+                break;
+                // TODO: Implement other functions
+        }
+        separator();
     }
 }
 
