@@ -14,6 +14,8 @@ typedef unsigned int Id;
 typedef char PhoneNumber[PHONE_NUMBER_LENGTH];
 typedef std::string Email;
 
+extern Id next_id;
+
 typedef struct _patient {
     Id id;
     std::string name;
@@ -25,7 +27,7 @@ typedef struct _patient {
     std::string address;
 
     BloodType blood_type;
-    std::vector<Appointment> medical_record;
+    // std::vector<Appointment> medical_record;
 } Patient;
 
 Patient registerPatient();

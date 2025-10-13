@@ -5,7 +5,7 @@
 #include <string>
 
 #include "util.hpp"
-static Id next_id = 1;
+Id next_id = 1;
 
 // TODO: Implement all the other fields
 Patient registerPatient() {

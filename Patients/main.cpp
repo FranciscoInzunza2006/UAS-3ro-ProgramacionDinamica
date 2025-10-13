@@ -31,11 +31,15 @@
 
 #include <cstdlib>
 
+#include "clinic.hpp"
 #include "menu.hpp"
 
 int main() {
+    loadPatientsData();
+
     system("chcp 65001 && cls");
     systemMenu();
 
+    savePatientsData();
     return 0;
 }
