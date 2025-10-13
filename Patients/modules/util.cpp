@@ -47,7 +47,6 @@ std::string getStringOrNothing(const std::string& message) {
 }
 
 void waitForInput() {
-    std::cout << "Waiting\n";
     std::cout << std::flush;
 
     clearInputStream();
