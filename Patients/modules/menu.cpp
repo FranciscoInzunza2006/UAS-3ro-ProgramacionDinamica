@@ -85,9 +85,18 @@ void patientMenu(Patient& patient) {
                 separator();
                 printPatient(patient);
                 break;
-                // TODO: Implement other functions
+            case 3:
+                for (size_t i = 0; i < patients.size(); i++) {
+                    if (patients[i].id == patient.id) {
+                        patients.erase(patients.begin() + i);
+                        std::cout << "Paciente borrado.\n";
+                        goto exit_case;
+                    }
+                }
+                std::cout << "No se encontró el paciente.";
+            exit_case:
+                break;
         }
-        separator();
     }
 }
 
