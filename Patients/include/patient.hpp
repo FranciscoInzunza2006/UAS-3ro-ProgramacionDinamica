@@ -19,14 +19,14 @@ extern Id next_id;
 typedef struct _patient {
     Id id;
     std::string name;
-    std::string last_name;
-    std::time_t birth_date;
+    // std::string last_name;
+    // std::time_t birth_date;
 
-    Email email;
-    PhoneNumber phone_number;
-    std::string address;
+    // Email email;
+    // PhoneNumber phone_number;
+    // std::string address;
 
-    BloodType blood_type;
+    // BloodType blood_type;
     // std::vector<Appointment> medical_record;
 } Patient;
 

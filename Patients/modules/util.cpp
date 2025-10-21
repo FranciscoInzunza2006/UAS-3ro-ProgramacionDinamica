@@ -36,6 +36,17 @@ int getIntRange(const int min, const int max, const std::string& message) {
     return number;
 }
 
+bool getBool(const std::string& message) {
+    std::cout << message;
+
+    bool number;
+    if (std::cin >> number) return number;
+
+    std::cout << "¡Valor invalido ingresado!\n";
+    clearInputStream();
+    return getBool(message);
+}
+
 // FIXME: Causes "waitForInput" to requiere 2 enters.
 std::string getStringOrNothing(const std::string& message) {
     clearInputStream();

@@ -7,6 +7,8 @@
 #include "patient.hpp"
 #include "util.hpp"
 
+using std::cout;
+
 void searchPatient();
 void patientMenu(Patient& patient);
 
@@ -72,7 +74,7 @@ void searchPatient() {
 
 void patientMenu(Patient& patient) {
     std::cout << "  (1) Modificar información del paciente\n";
-    std::cout << "  (2) Consultar citas\n";
+    std::cout << "  (2) Realizar chequeo\n";
     std::cout << "  (3) Eliminar paciente (y citas relacionadas)\n\n";
     std::cout << "  (4) No hacer nada.\n";
     separator();
@@ -84,6 +86,9 @@ void patientMenu(Patient& patient) {
                 updatePatientInfo(patient);
                 separator();
                 printPatient(patient);
+                break;
+            case 2:
+                makeAppointment();
                 break;
             case 3:
                 for (size_t i = 0; i < patients.size(); i++) {
