@@ -24,12 +24,12 @@ bool loadPatientsData() {
     Patient patient;
     while (file >> patient.id) {
         file >> patient.name;
-        // file >> patient.last_name;
+        file >> patient.last_name;
         // file >> patient.birth_date;
 
-        // file >> patient.email;
-        // file >> patient.phone_number;
-        // file >> patient.address;
+        file >> patient.email;
+        file >> patient.phone_number;
+        file >> patient.address;
 
         // unsigned int blood_type;
         // file >> blood_type;
@@ -60,16 +60,16 @@ bool savePatientsData() {
         return false;
     }
 
-    for (auto &&patient : patients) {
+    for (auto&& patient : patients) {
         file << patient.id << std::endl;
 
         file << patient.name << std::endl;
-        // file << patient.last_name << std::endl;
+        file << patient.last_name << std::endl;
         // file << patient.birth_date << std::endl;
 
-        // file << patient.email << std::endl;
-        // file << patient.phone_number << std::endl;
-        // file << patient.address << std::endl;
+        file << patient.email << std::endl;
+        file << patient.phone_number << std::endl;
+        file << patient.address << std::endl;
 
         // file << patient.blood_type << std::endl;
     }

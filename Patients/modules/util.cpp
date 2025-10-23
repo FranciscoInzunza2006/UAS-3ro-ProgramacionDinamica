@@ -47,6 +47,35 @@ bool getBool(const std::string& message) {
     return getBool(message);
 }
 
+std::string getString(const std::string& message) {
+    std::cout << message;
+
+    std::string str;
+    if (std::cin >> str) return str;
+
+    std::cout << "¡Valor invalido ingresado!\n";
+    clearInputStream();
+    return getString(message);
+}
+
+std::string getStringMaxLength(const int max_length, const std::string& message) {
+    std::cout << message;
+
+    std::string str;
+    if (!(std::cin >> str)) {
+        std::cout << "¡Valor invalido ingresado!\n";
+        clearInputStream();
+        return getStringMaxLength(max_length, message);
+    }
+
+    if (str.length() > (size_t)max_length) {
+        std::cout << "¡Valor demasiado grande ingresado! El maximo son " << max_length << " carácteres. \n";
+        return getStringMaxLength(max_length, message);
+    }
+
+    return str;
+}
+
 // FIXME: Causes "waitForInput" to requiere 2 enters.
 std::string getStringOrNothing(const std::string& message) {
     clearInputStream();
