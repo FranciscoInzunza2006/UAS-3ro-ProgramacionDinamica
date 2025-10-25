@@ -30,6 +30,8 @@ public:
     void modifyPatient();
     void deletePatient();
 
+    void printPatients() const;
+
     bool login();
     void mainMenu();
 };

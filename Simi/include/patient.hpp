@@ -20,7 +20,10 @@ class Patient
     std::string phone;
     std::string address;
 
-    public:
+public:
     static Patient create();
     void modifyPatient();
+
+    [[nodiscard]] size_t getID() const { return id; }
+    [[nodiscard]] std::string getName() const { return name; }
 };
