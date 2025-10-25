@@ -22,15 +22,59 @@ void Clinic::registerPatient()
 
 void Clinic::searchPatient()
 {
+    const std::string needle = input_handler::getString("Introduce la ID del paciente o su primer nombre o apellido: ");
 
+    if (needle.empty()) return;
+
+    // TODO: Return a reference to the patient
+    // TODO: Use std::optional
+    size_t patient_index = 0;
+    // TODO: Separate in two different functions
+    bool search_by_id = std::isdigit(needle[0]);
+    if (search_by_id)
+    {
+        // TODO: Safer conversion
+        size_t id = std::stoi(needle);
+        for (size_t patient_index_ = 0; patient_index_ < patients.size(); patient_index_++)
+        {
+            if (patients[patient_index_].getID() == id)
+            {
+                patient_index = patient_index_;
+                break;
+            }
+        }
+    }
+    else
+    {
+        // Remove case sensitive
+        for (size_t patient_index_ = 0; patient_index_ < patients.size(); patient_index_++)
+        {
+            if (patients[patient_index_].getName() == needle || patients[patient_index_].getSurname() == needle)
+            {
+                patient_index = patient_index_;
+                break;
+            }
+        }
+    }
+
+    if (patients[patient_index].getID() != 0)
+        patientMenu(patient_index);
+    else
+        std::cout << "No se encontró el paciente.\n";
 }
 
-void Clinic::modifyPatient()
+void Clinic::modifyPatient(const Patient& patient_index)
 {
+    // TODO: Implement this
 }
 
-void Clinic::deletePatient()
+void Clinic::deletePatient(const size_t patient_index)
 {
+    // FIXME: Doesn't actually erase the patient and doesn't closes the submenu
+    if (input_handler::getBool("¿Seguro que quieres borrar al paciente? "))
+        patients.erase(patients.begin() + patient_index);
+    else
+        std::cout << "No se ha borrado al paciente. \n";
 }
 
 void Clinic::printPatients() const
@@ -52,6 +96,17 @@ bool Clinic::loginAttempt(const std::string& username, const std::string& passwo
         }
     }
     return false;
+}
+
+void Clinic::patientMenu(const size_t patient_index)
+{
+    Patient* patient {&patients[patient_index]};
+    const auto patient_menu = Menu(patient->getName(), {
+                                       {"Realizar chequeo", std::bind(&Clinic::registerPatient, this)},
+                                       {"Mostrar más información", std::bind(&Patient::printPatientInfo, patient)},
+                                       {"Eliminar paciente", std::bind(&Clinic::deletePatient, this, patient_index)},
+                                   });
+    patient_menu.show();
 }
 
 bool Clinic::login()
@@ -82,10 +137,10 @@ void Clinic::mainMenu()
     // TODO: This doesn't work when functions are private, search a way to make it work.
     // std::bind is there since registerPatient isn't static so it needs the object
     const auto main_menu = Menu("Clinica \"El Simi\"", {
-        {"Registrar paciente", std::bind(&Clinic::registerPatient, this)},
-        {"Buscar paciente", std::bind(&Clinic::registerPatient, this)},
-        {"Mostrar pacientes registrados", std::bind(&Clinic::printPatients, this)},
-    });
+                                    {"Registrar paciente", std::bind(&Clinic::registerPatient, this)},
+                                    {"Buscar paciente", std::bind(&Clinic::searchPatient, this)},
+                                    {"Mostrar pacientes registrados", std::bind(&Clinic::printPatients, this)},
+                                });
 
     main_menu.show();
 }

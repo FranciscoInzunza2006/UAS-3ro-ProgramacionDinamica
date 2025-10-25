@@ -24,11 +24,12 @@ class Clinic
     std::vector<Patient> patients;
 
     [[nodiscard]] bool loginAttempt(const std::string& username, const std::string& password) const;
+    void patientMenu(const size_t patient_index);
 public:
     void registerPatient();
     void searchPatient();
-    void modifyPatient();
-    void deletePatient();
+    void modifyPatient(const Patient& patient);
+    void deletePatient(size_t patient_index);
 
     void printPatients() const;
 

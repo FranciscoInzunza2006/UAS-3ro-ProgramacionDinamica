@@ -3,6 +3,10 @@
 //
 
 #include "patient.hpp"
+
+#include <iostream>
+#include <ostream>
+
 #include "input_handler.hpp"
 
 size_t next_id = 1;
@@ -21,6 +25,13 @@ Patient Patient::create()
     //std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
 
     return patient;
+}
+
+void Patient::printPatientInfo() const
+{
+    std::cout << "ID: #" << id << '\n';
+    std::cout << "Nombre completo: " << name << ' ' << surname << '\n';
+    // TODO: The other fields, better if we format them a bit
 }
 
 void Patient::modifyPatient()

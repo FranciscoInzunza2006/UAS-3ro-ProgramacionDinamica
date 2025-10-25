@@ -21,9 +21,15 @@ class Patient
     std::string address;
 
 public:
+    Patient() = default;
+    //Patient(const Patient& other) = delete;
+    //Patient& operator=(const Patient& other) = delete;
+
     static Patient create();
+    void printPatientInfo() const;
     void modifyPatient();
 
     [[nodiscard]] size_t getID() const { return id; }
     [[nodiscard]] std::string getName() const { return name; }
+    [[nodiscard]] std::string getSurname() const { return surname; }
 };
