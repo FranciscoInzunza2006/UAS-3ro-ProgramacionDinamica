@@ -3,6 +3,9 @@
 //
 
 #include "clinic.hpp"
+
+#include <iomanip>
+
 #include "patient.hpp"
 
 #include <iostream>
@@ -102,11 +105,30 @@ void Clinic::deletePatient(const Patient& patient)
 
 void Clinic::printPatients() const
 {
-    // TODO: Print as a cool looking table
+    const int IDW = 4; // Width
+    const char IDF = '0'; // Fill
+
+    const int NAMEW = 20;
+    const int EMAILW = 15;
+    const int PHONEW = PHONE_NUMBER_LENGTH + 1;
+    const int ADDRESSW = 25;
+
+    const std::string headers = "| ID  | Nombre              | Correo         | Teléfono   | Dirección                |";
+    const std::string separator = std::string(headers.length() - 2, '-');
+
+    std::cout << separator << '\n';
+    std::cout << headers << '\n';
+    std::cout << separator << '\n';
     for (auto&& patient : patients)
     {
-        std::cout << '#' << patient.getID() << ' ' << patient.getName() << '\n';
+        std::cout << "| " << std::setw(IDW) << std::setfill(IDF) << patient.getID() << std::setfill(' ');
+        std::cout << "| " << std::left << std::setw(NAMEW) << patient.getName();
+        std::cout << "| " << std::left << std::setw(EMAILW) << patient.getEmail();
+        std::cout << "| " << std::setw(PHONEW) << patient.getPhone();
+        std::cout << "| " << std::left << std::setw(ADDRESSW) << patient.getAddress();
+        std::cout << "|\n";
     }
+    std::cout << separator << '\n';
 }
 
 bool Clinic::loginAttempt(const std::string& username, const std::string& password) const
