@@ -7,6 +7,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <conio.h>
 
 int input_handler::getInt(const std::string& message) {
     return getIntRange(INT_MIN, INT_MAX, message);
@@ -68,6 +69,16 @@ void input_handler::clearInputStream()
 {
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+int input_handler::getKeyPress(const int min, const int max)
+{
+    while (true)
+    {
+        const int result = getch();
+        if (result >= min && result <= max)
+            return result;
+    }
 }
 
 void input_handler::waitForInput() {

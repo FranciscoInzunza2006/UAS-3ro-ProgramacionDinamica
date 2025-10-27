@@ -16,20 +16,24 @@ void Menu::show() const
     {
         cool::clearScreen();
 
+        cool::separator();
         std::cout << name << '\n';
+        cool::separator();
         for (int option_index = 0; option_index < options_length; option_index++)
         {
             std::cout << "(" << option_index + 1 << ") " << options[option_index].name << '\n';
         }
         std::cout << "(" << options_length + 1 << ") Salir" << '\n';
+        cool::separator();
 
-        const int chosen_option = input_handler::getIntRange(1, options_length + 1) - 1;
-
+        const int chosen_option = input_handler::getKeyPress(1 + '0', static_cast<int>(options_length) + 1 + '0') - 1 -
+            '0';
         if (chosen_option == options_length)
         {
             break;
         }
 
+        cool::clearScreen();
         options[chosen_option].action();
         input_handler::waitForInput();
     }

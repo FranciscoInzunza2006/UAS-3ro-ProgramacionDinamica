@@ -6,6 +6,7 @@
 
 #include <string>
 #include <iostream>
+#include <optional>
 #include  <vector>
 
 #include "patient.hpp"
@@ -23,14 +24,17 @@ class Clinic
     std::vector<User> users = std::vector<User>();
     std::vector<Patient> patients;
 
-    [[nodiscard]] bool loginAttempt(const std::string& username, const std::string& password) const;
-    void patientMenu(const size_t patient_index);
-public:
     void registerPatient();
     void searchPatient();
-    void modifyPatient(const Patient& patient);
-    void deletePatient(size_t patient_index);
+    void modifyPatient(Patient& patient);
+    void deletePatient(const Patient& patient);
 
+    std::optional<std::reference_wrapper<Patient>> searchPatientById(size_t id);
+    std::optional<std::reference_wrapper<Patient>> searchPatientByName(const std::string& name);
+
+    void patientMenu(Patient& patient);
+    [[nodiscard]] bool loginAttempt(const std::string& username, const std::string& password) const;
+public:
     void printPatients() const;
 
     bool login();

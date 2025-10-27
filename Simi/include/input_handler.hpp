@@ -15,6 +15,8 @@ namespace input_handler
     std::string getString(const std::string& message = "");
     std::string getStringMaxLength(size_t max_length, const std::string& message = "");
 
+    int getKeyPress(int min = '0', int max = '9');
+
     void clearInputStream();
     void waitForInput();
 }
