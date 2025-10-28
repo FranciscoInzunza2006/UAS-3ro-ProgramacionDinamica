@@ -32,4 +32,9 @@ public:
     [[nodiscard]] size_t getID() const { return id; }
     [[nodiscard]] std::string getName() const { return name; }
     [[nodiscard]] std::string getSurname() const { return surname; }
+    
+    [[nodiscard]] std::string getEmail() const { return email; }
+    [[nodiscard]] std::string getPhone() const { return phone; }
+    [[nodiscard]] std::string getAddress() const { return address; }
+
 };

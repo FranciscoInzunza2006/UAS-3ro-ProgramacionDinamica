@@ -36,5 +36,28 @@ void Patient::printPatientInfo() const
 
 void Patient::modifyPatient()
 {
-    return;
+    std::string new_name = input_handler::getStringOrNothing("Ingrese el nombre (deje en blanco para conservar): ");
+    if (!new_name.empty()) {
+        name = new_name;
+    }
+
+    std::string new_last_name = input_handler::getStringOrNothing("Ingrese los apellidos (deje en blanco para conservar): ");
+    if (!new_last_name.empty()) {
+        surname = new_last_name;
+    }
+
+    std::string new_email = input_handler::getStringOrNothing("Ingrese el correo (deje en blanco para conservar): ");
+    if (!new_email.empty()) {
+        email = new_email;
+    }
+
+    std::string new_phone_number = input_handler::getStringOrNothing("Ingrese el numero de telefono (deje en blanco para conservar): ");
+    if (!new_phone_number.empty()) {
+        phone = new_phone_number;
+    }
+
+    std::string new_address = input_handler::getStringOrNothing("Ingrese la dirección (deje en blanco para conservar): ");
+    if (!new_address.empty()) {
+        address = new_address;
+    }
 }

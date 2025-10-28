@@ -65,6 +65,18 @@ std::string input_handler::getStringMaxLength(const size_t max_length, const std
     return str;
 }
 
+
+std::string input_handler::getStringOrNothing(const std::string& message) {
+    std::string str;
+    std::cout << message;
+
+    input_handler::clearInputStream();
+    std::getline(std::cin, str);
+    input_handler::clearInputStream();
+
+    return str;
+}
+
 void input_handler::clearInputStream()
 {
     std::cin.clear();

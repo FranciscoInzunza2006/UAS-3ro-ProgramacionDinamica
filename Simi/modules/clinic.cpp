@@ -57,11 +57,11 @@ void Clinic::modifyPatient(Patient& patient)
 std::optional<std::reference_wrapper<Patient>> Clinic::searchPatientById(const size_t id)
 {
     // TODO: Binary search
-    for (size_t patient_index = 0; patient_index < patients.size(); patient_index++)
+    for (auto& patient : patients)
     {
-        if (patients[patient_index].getID() == id)
+        if (patient.getID() == id)
         {
-            return std::ref(patients[patient_index]);
+            return std::ref(patient);
         }
     }
 
@@ -108,12 +108,13 @@ void Clinic::printPatients() const
     const int IDW = 4; // Width
     const char IDF = '0'; // Fill
 
-    const int NAMEW = 20;
-    const int EMAILW = 15;
+    const int NAMEW = 25;
+    const int EMAILW = 20;
     const int PHONEW = PHONE_NUMBER_LENGTH + 1;
     const int ADDRESSW = 25;
 
-    const std::string headers = "| ID  | Nombre              | Correo         | Teléfono   | Dirección                |";
+    const std::string headers =
+        "| ID  | Nombre                   | Correo              | Teléfono   | Dirección                |";
     const std::string separator = std::string(headers.length() - 2, '-');
 
     std::cout << separator << '\n';
@@ -146,9 +147,10 @@ bool Clinic::loginAttempt(const std::string& username, const std::string& passwo
 void Clinic::patientMenu(Patient& patient)
 {
     const auto patient_menu = Menu(patient.getName(), {
-                                       {"Realizar chequeo", std::bind(&Clinic::registerPatient, this)},
-                                       {"Mostrar más información", std::bind(&Patient::printPatientInfo, patient)},
-                                       {"Eliminar paciente", std::bind(&Clinic::deletePatient, this, patient)},
+                                       {"Realizar chequeo", [this] { registerPatient(); }},
+                                       {"Mostrar más información", [patient] { patient.printPatientInfo(); }},
+                                       {"Modificar información", [] {}},
+                                       {"Eliminar paciente", [this, patient] { deletePatient(patient); }},
                                    });
     patient_menu.show();
 }
