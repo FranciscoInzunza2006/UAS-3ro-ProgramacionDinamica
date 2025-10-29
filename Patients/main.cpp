@@ -29,10 +29,17 @@
         * Result
 */
 
-#include "patient.hpp"
+#include <cstdlib>
+
+#include "clinic.hpp"
+#include "menu.hpp"
 
 int main() {
-    Patient patient = Patient();
+    loadPatientsData();
 
+    system("chcp 65001 && cls");
+    systemMenu();
+
+    savePatientsData();
     return 0;
 }

@@ -1,0 +1,7 @@
+
+# Out
+*.exe
+
+# IDE
+.idea/
+
