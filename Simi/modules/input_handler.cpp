@@ -70,9 +70,12 @@ std::string input_handler::getStringOrNothing(const std::string& message) {
     std::string str;
     std::cout << message;
 
-    input_handler::clearInputStream();
-    std::getline(std::cin, str);
-    input_handler::clearInputStream();
+    // input_handler::clearInputStream();
+    // std::getline(std::cin, str);
+
+    std::cin >> str;
+    if (str == " ")
+        return "";
 
     return str;
 }

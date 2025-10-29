@@ -31,7 +31,9 @@ void Patient::printPatientInfo() const
 {
     std::cout << "ID: #" << id << '\n';
     std::cout << "Nombre completo: " << name << ' ' << surname << '\n';
-    // TODO: The other fields, better if we format them a bit
+    std::cout << "Correo: " << email << '\n';
+    std::cout << "Numero de teléfono: " << phone << '\n';
+    std::cout << "Dirección: " << address << '\n';
 }
 
 void Patient::modifyPatient()

@@ -14,6 +14,47 @@
 
 #include "input_handler.hpp"
 #include "menu.hpp"
+#include "print+.hpp"
+
+void makeAppointment() {
+    bool diabetes = input_handler::getBool("¿Eres diabetico? (S=1/N=0) : ");
+    bool condicion = input_handler::getBool("¿Cuentas con alguna condicional? (S=1/N=0) : ");
+    bool raro = input_handler::getBool("¿Eres furro? (S=1/N=0) : ");
+    bool sida = input_handler::getBool("¿Tienes sida? (S=1/N=0) : ");
+    bool futuro_tieso = input_handler::getBool("¿Tienes cancer? (S=1/N=0) : ");
+
+    if (futuro_tieso) {
+        std::cout << "Lmao, ahí quedaste carnal.\n";
+        return;
+    }
+
+    if (raro) {
+        if (sida) {
+            std::cout << "Debiste usar protección.\n";
+        } else {
+            std::cout << "Usa protección, eres un peligro andante.\n";
+        }
+
+        return;
+    }
+
+    if (sida) {
+        std::cout << "Usa protección siempre, informa a tu pareja y futuras parejas de esta situación\n";
+        return;
+    }
+
+    if (condicion) {
+        std::cout << "Explica más a detalle tu condición para poder recetarte medicamentos acorde.\n";
+        return;
+    }
+
+    if (diabetes) {
+        std::cout << "Pase a la farmacia para darle insulina.\n";
+        return;
+    }
+
+    std::cout << "Si estabas tan sano, ¿Por qué viniste?\n";
+}
 
 void Clinic::registerPatient()
 {
@@ -146,13 +187,57 @@ bool Clinic::loginAttempt(const std::string& username, const std::string& passwo
 
 void Clinic::patientMenu(Patient& patient)
 {
-    const auto patient_menu = Menu(patient.getName(), {
-                                       {"Realizar chequeo", [this] { registerPatient(); }},
-                                       {"Mostrar más información", [patient] { patient.printPatientInfo(); }},
-                                       {"Modificar información", [] {}},
-                                       {"Eliminar paciente", [this, patient] { deletePatient(patient); }},
-                                   });
-    patient_menu.show();
+    // const auto patient_menu = Menu(patient.getName(), {
+    //                                    {"Realizar chequeo", [this] { registerPatient(); }},
+    //                                    {"Mostrar más información", [patient] { patient.printPatientInfo(); }},
+    //                                    {"Modificar información", std::bind(&modifyPatient, patient)},
+    //                                    {"Eliminar paciente", [this, patient] { deletePatient(patient); }},
+    //                                });
+
+    while (true)
+    {
+        cool::clearScreen();
+
+        cool::separator();
+        std::cout << "Paciente:" << patient.getName() << '\n';
+        cool::separator();
+
+        std::cout << "(1) Realizar chequeo" << '\n';
+        std::cout << "(2) Mostrar más información" << '\n';
+        std::cout << "(3) Modificar información" << '\n';
+        std::cout << "(4) Eliminar paciente" << '\n';
+        std::cout << "(5) Salir" << '\n';
+
+        cool::separator();
+
+        const int chosen_option = input_handler::getIntRange(1, 5);
+        if (chosen_option == 5)
+            return;
+
+        cool::clearScreen();
+
+        switch (chosen_option)
+        {
+        case 1:
+            makeAppointment();
+            break;
+
+        case 2:
+            patient.printPatientInfo();
+            break;
+
+        case 3:
+            patient.modifyPatient();
+            break;
+
+        case 4:
+            deletePatient(patient);
+            return;
+        default: ;
+        }
+
+        input_handler::waitForInput();
+    }
 }
 
 bool Clinic::login()
