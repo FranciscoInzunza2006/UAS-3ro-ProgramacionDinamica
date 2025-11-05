@@ -5,3 +5,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(login login.cpp)
 add_executable(counter counter.cpp)
+add_executable(mercado_libre mercado_libre.cpp)
