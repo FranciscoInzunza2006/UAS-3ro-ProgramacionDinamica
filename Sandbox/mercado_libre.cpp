@@ -14,7 +14,7 @@ bool contains_blacklisted_word(const std::string& message);
 
 int main()
 {
-    std::cout << "Mensajeria de Mercado Libre";
+    std::cout << "Mensajeria de Mercado Libre\n";
 
     while (true)
     {
@@ -59,25 +59,12 @@ bool is_valid_message(const std::string& message)
     //return !(contains_email(sample) || contains_phone_number(sample) || contains_blacklisted_word(sample));
 }
 
-bool contains_email(const std::string& message)
-{
-    for (const auto c : message)
-    {
-        if (c == '@')
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool contains_phone_number(const std::string& message)
 {
     int numbers_next_to_each_other = 0;
     for (const char& c : message)
     {
-        if (std::isspace(c) || c == '-')
+        if (std::isspace(c) || c == '-' || c== '+' || c=='.')
             continue;
 
         if (std::isdigit(c))
@@ -100,8 +87,13 @@ bool contains_phone_number(const std::string& message)
 bool contains_blacklisted_word(const std::string& message)
 {
     const std::string blacklisted_words[] = {
+        "trato directo",
+        "contactame",
+        "contacto directo",
+
         "whatsapp",
         "telegram",
+        "face", // facebook
 
         "correo electronico",
         "correo electrónico",
