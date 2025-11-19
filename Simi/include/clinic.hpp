@@ -39,4 +39,7 @@ public:
 
     bool login();
     void mainMenu();
+
+    bool loadPatients();
+    bool savePatients() const;
 };

@@ -9,7 +9,11 @@ int main()
     auto simi = Clinic();
     //if (!simi.login()) return -1;
 
+
+
+    simi.loadPatients();
     simi.mainMenu();
+    simi.savePatients();
 
     return 0;
 }

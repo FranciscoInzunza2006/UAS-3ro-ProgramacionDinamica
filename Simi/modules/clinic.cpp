@@ -4,6 +4,7 @@
 
 #include "clinic.hpp"
 
+#include <fstream>
 #include <iomanip>
 
 #include "patient.hpp"
@@ -13,7 +14,6 @@
 #include <vector>
 
 #include "input_handler.hpp"
-#include "menu.hpp"
 #include "print+.hpp"
 
 void makeAppointment() {
@@ -265,11 +265,98 @@ bool Clinic::login()
 
 void Clinic::mainMenu()
 {
-    const auto main_menu = Menu("Clinica \"El Simi\"", {
-                                    {"Registrar paciente", [this] { registerPatient(); }},
-                                    {"Buscar paciente", [this] { searchPatient(); }},
-                                    {"Mostrar pacientes registrados", [this] { printPatients(); }},
-                                });
+    while (true)
+    {
+        cool::clearScreen();
 
-    main_menu.show();
+        cool::separator();
+        std::cout << "Clinica \"El Simi\"\n";
+        cool::separator();
+
+        std::cout << "(1) Registrar paciente" << '\n';
+        std::cout << "(2) Buscar paciente" << '\n';
+        std::cout << "(3) Mostrar pacientes registrados" << '\n';
+        std::cout << "(4) Salir" << '\n';
+
+        cool::separator();
+
+        const int chosen_option = input_handler::getIntRange(1, 4);
+        if (chosen_option == 4)
+            return;
+
+        cool::clearScreen();
+
+        switch (chosen_option)
+        {
+        case 1:
+            registerPatient();
+            break;
+
+        case 2:
+            searchPatient();
+            break;
+
+        case 3:
+            printPatients();
+            break;
+        default: ;
+        }
+
+        input_handler::waitForInput();
+    }
 }
+
+
+/// File stuff
+#define SAVE_PATH "data.txt"
+bool Clinic::loadPatients()
+{
+    std::ifstream file(SAVE_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo con los datos de los pacientes\n";
+        return false;
+    }
+
+    std::string id;
+    std::string name;
+    std::string surname;
+    std::string email;
+    std::string phone;
+    std::string address;
+    while (std::getline(file, id))
+    {
+        std::getline(file, name);
+        std::getline(file, surname);
+        std::getline(file, email);
+        std::getline(file, phone);
+        std::getline(file, address);
+
+        patients.emplace_back(std::stoull(id), name, surname, email, phone, address);
+    }
+    file.close();
+    return true;
+}
+
+bool Clinic::savePatients() const
+{
+    std::ofstream file(SAVE_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo para guardar los datos de los pacientes\n";
+        return false;
+    }
+
+    for (const auto& patient : patients)
+    {
+        file << patient.getID() << '\n';
+        file << patient.getName() << '\n';
+        file << patient.getSurname() << '\n';
+        file << patient.getEmail() << '\n';
+        file << patient.getPhone() << '\n';
+        file << patient.getAddress() << '\n';
+    }
+    file.close();
+    return true;
+}
+

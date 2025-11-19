@@ -22,6 +22,17 @@ class Patient
 
 public:
     Patient() = default;
+    Patient(size_t id, const std::string& name, const std::string& surname, const std::string& email,
+        const std::string& phone, const std::string& address)
+        : id(id),
+          name(name),
+          surname(surname),
+          email(email),
+          phone(phone),
+          address(address)
+    {
+    }
+
     //Patient(const Patient& other) = delete;
     //Patient& operator=(const Patient& other) = delete;
 
