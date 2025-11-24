@@ -34,11 +34,15 @@ class Clinic
 
     void patientMenu(Patient& patient);
     [[nodiscard]] bool loginAttempt(const std::string& username, const std::string& password) const;
+
 public:
     void printPatients() const;
 
-    bool login();
+    bool login() const;
     void mainMenu();
+
+    bool loadUsers();
+    bool saveUsers() const;
 
     bool loadPatients();
     bool savePatients() const;

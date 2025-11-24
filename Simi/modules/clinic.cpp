@@ -173,17 +173,7 @@ void Clinic::printPatients() const
     std::cout << separator << '\n';
 }
 
-bool Clinic::loginAttempt(const std::string& username, const std::string& password) const
-{
-    for (const auto& user : users)
-    {
-        if (user.username == username)
-        {
-            return user.username == password;
-        }
-    }
-    return false;
-}
+
 
 void Clinic::patientMenu(Patient& patient)
 {
@@ -240,29 +230,6 @@ void Clinic::patientMenu(Patient& patient)
     }
 }
 
-bool Clinic::login()
-{
-    users.push_back(User("admin", "admin"));
-    users.push_back(User("Francisco", "12345678"));
-
-    for (int attempt = 0; attempt < MAX_LOGIN_ATTEMPTS; attempt++)
-    {
-        const std::string username = input_handler::getString("Ingresa tu usuario: ");
-        const std::string password = input_handler::getString("Ingresa tu contraseña: ");
-
-        if (loginAttempt(username, password))
-        {
-            std::cout << "Bienvenido " << username << ".\n";
-            return true;
-        }
-
-        std::cout << "Usuario o contraseña inválidos.\n";
-    }
-
-    std::cout << "Máximo numero de intentos alcanzado.\n";
-    return false;
-}
-
 void Clinic::mainMenu()
 {
     while (true)
@@ -306,12 +273,83 @@ void Clinic::mainMenu()
     }
 }
 
+bool Clinic::login() const
+{
+    for (int attempt = 0; attempt < MAX_LOGIN_ATTEMPTS; attempt++)
+    {
+        const std::string username = input_handler::getString("Ingresa tu usuario: ");
+        const std::string password = input_handler::getString("Ingresa tu contraseña: ");
+
+        if (loginAttempt(username, password))
+        {
+            std::cout << "Bienvenido " << username << ".\n";
+            return true;
+        }
+
+        std::cout << "Usuario o contraseña inválidos.\n";
+    }
+
+    std::cout << "Máximo numero de intentos alcanzado.\n";
+    return false;
+}
+bool Clinic::loginAttempt(const std::string& username, const std::string& password) const
+{
+    for (const auto& user : users)
+    {
+        if (user.username == username)
+        {
+            return user.password == password;
+        }
+    }
+    return false;
+}
 
 /// File stuff
-#define SAVE_PATH "data.txt"
+#define PATIENTS_PATH "data.txt"
+#define USERS_PATH "users.txt"
+
+bool Clinic::loadUsers()
+{
+    std::ifstream file(USERS_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo con los empleados.\n";
+        return false;
+    }
+
+    std::string username;
+    std::string password;
+    while (std::getline(file, username, ','))
+    {
+        std::getline(file, password);
+
+        users.emplace_back(username, password);
+    }
+    file.close();
+    return true;
+}
+
+bool Clinic::saveUsers() const
+{
+    std::ofstream file(USERS_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo para guardar los datos de los empleados.\n";
+        return false;
+    }
+
+    for (const auto& user : users)
+    {
+        file << user.username << ',' << user.password << '\n';
+    }
+    file.close();
+    return true;
+}
+
+
 bool Clinic::loadPatients()
 {
-    std::ifstream file(SAVE_PATH);
+    std::ifstream file(PATIENTS_PATH);
     if (!file)
     {
         std::cout << "No se puedo abrir el archivo con los datos de los pacientes\n";
@@ -340,7 +378,7 @@ bool Clinic::loadPatients()
 
 bool Clinic::savePatients() const
 {
-    std::ofstream file(SAVE_PATH);
+    std::ofstream file(PATIENTS_PATH);
     if (!file)
     {
         std::cout << "No se puedo abrir el archivo para guardar los datos de los pacientes\n";
