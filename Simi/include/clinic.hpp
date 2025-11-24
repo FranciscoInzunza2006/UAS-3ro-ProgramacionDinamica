@@ -23,6 +23,7 @@ class Clinic
 {
     std::vector<User> users = std::vector<User>();
     std::vector<Patient> patients;
+    std::vector<Appointment> appointments;
 
     void registerPatient();
     void searchPatient();
@@ -35,6 +36,7 @@ class Clinic
     void patientMenu(Patient& patient);
     [[nodiscard]] bool loginAttempt(const std::string& username, const std::string& password) const;
 
+    void makeAppointment(const Patient& patient);
 public:
     void printPatients() const;
 
@@ -46,4 +48,7 @@ public:
 
     bool loadPatients();
     bool savePatients() const;
+
+    bool loadAppointments();
+    bool saveAppointments() const;
 };

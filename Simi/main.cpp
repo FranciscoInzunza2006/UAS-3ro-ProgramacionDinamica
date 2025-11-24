@@ -11,9 +11,11 @@ int main()
     if (!simi.login()) return -1;
 
     simi.loadPatients();
+    simi.saveAppointments();
 
     simi.mainMenu();
 
+    simi.saveAppointments();
     simi.savePatients();
     simi.saveUsers();
 

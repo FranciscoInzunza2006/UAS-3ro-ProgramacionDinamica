@@ -11,7 +11,7 @@ extern size_t next_id;
 
 class Patient
 {
-    size_t id = next_id++;
+    size_t id = next_id++; // Shared with appointmets because yes
 
     std::string name;
     std::string surname;
@@ -48,4 +48,16 @@ public:
     [[nodiscard]] std::string getPhone() const { return phone; }
     [[nodiscard]] std::string getAddress() const { return address; }
 
+};
+
+struct Appointment
+{
+    size_t appointment_id;
+    size_t patient_id;
+
+    bool high_temp;
+    bool diabetes;
+    bool vih;
+    bool covid;
+    bool gay;
 };

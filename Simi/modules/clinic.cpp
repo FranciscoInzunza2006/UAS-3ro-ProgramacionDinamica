@@ -16,44 +16,16 @@
 #include "input_handler.hpp"
 #include "print+.hpp"
 
-void makeAppointment() {
+void Clinic::makeAppointment(const Patient& patient) {
+    bool high_temp = input_handler::getBool("¿Sientes una alta temperatura? (S=1/N=0) : ");
+    bool covid = input_handler::getBool("¿Sufriste covid? (S=1/N=0) : ");
     bool diabetes = input_handler::getBool("¿Eres diabetico? (S=1/N=0) : ");
-    bool condicion = input_handler::getBool("¿Cuentas con alguna condicional? (S=1/N=0) : ");
-    bool raro = input_handler::getBool("¿Eres furro? (S=1/N=0) : ");
-    bool sida = input_handler::getBool("¿Tienes sida? (S=1/N=0) : ");
-    bool futuro_tieso = input_handler::getBool("¿Tienes cancer? (S=1/N=0) : ");
+    bool vih = input_handler::getBool("¿Sufres alguna enfermedad de transmisión sexual? (S=1/N=0) : ");
+    bool gay = input_handler::getBool("¿Eres gay? (S=1/N=0) : ");
 
-    if (futuro_tieso) {
-        std::cout << "Lmao, ahí quedaste carnal.\n";
-        return;
-    }
+    std::cout << "Gracias por venir.\n";
 
-    if (raro) {
-        if (sida) {
-            std::cout << "Debiste usar protección.\n";
-        } else {
-            std::cout << "Usa protección, eres un peligro andante.\n";
-        }
-
-        return;
-    }
-
-    if (sida) {
-        std::cout << "Usa protección siempre, informa a tu pareja y futuras parejas de esta situación\n";
-        return;
-    }
-
-    if (condicion) {
-        std::cout << "Explica más a detalle tu condición para poder recetarte medicamentos acorde.\n";
-        return;
-    }
-
-    if (diabetes) {
-        std::cout << "Pase a la farmacia para darle insulina.\n";
-        return;
-    }
-
-    std::cout << "Si estabas tan sano, ¿Por qué viniste?\n";
+    appointments.emplace_back(next_id++,patient.getID(),high_temp, diabetes, vih, covid, gay);
 }
 
 void Clinic::registerPatient()
@@ -209,7 +181,7 @@ void Clinic::patientMenu(Patient& patient)
         switch (chosen_option)
         {
         case 1:
-            makeAppointment();
+            makeAppointment(patient);
             break;
 
         case 2:
@@ -307,6 +279,7 @@ bool Clinic::loginAttempt(const std::string& username, const std::string& passwo
 /// File stuff
 #define PATIENTS_PATH "data.txt"
 #define USERS_PATH "users.txt"
+#define APPOINTMENTS_PATH "appointments.txt"
 
 bool Clinic::loadUsers()
 {
@@ -345,7 +318,6 @@ bool Clinic::saveUsers() const
     file.close();
     return true;
 }
-
 
 bool Clinic::loadPatients()
 {
@@ -393,6 +365,63 @@ bool Clinic::savePatients() const
         file << patient.getEmail() << '\n';
         file << patient.getPhone() << '\n';
         file << patient.getAddress() << '\n';
+    }
+    file.close();
+    return true;
+}
+
+bool Clinic::loadAppointments()
+{
+    std::ifstream file(APPOINTMENTS_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo con los datos de las citas\n";
+        return false;
+    }
+
+    std::string id;
+    std::string patient_id;
+    std::string high_temp;
+    std::string diabetes;
+    std::string vih;
+    std::string covid;
+    std::string gay;
+    while (std::getline(file, id, ','))
+    {
+        std::getline(file, patient_id, ',');
+
+        std::getline(file, high_temp, ',');
+        std::getline(file, diabetes, ',');
+        std::getline(file, vih, ',');
+        std::getline(file, covid, ',');
+        std::getline(file, gay, ',');
+
+        appointments.emplace_back(
+            std::stoull(id),
+            std::stoull(patient_id),
+            high_temp == "1",
+            diabetes == "1",
+            vih == "1",
+            covid == "1",
+            gay == "1"
+            );
+    }
+    file.close();
+    return true;
+}
+
+bool Clinic::saveAppointments() const
+{
+    std::ofstream file(APPOINTMENTS_PATH);
+    if (!file)
+    {
+        std::cout << "No se puedo abrir el archivo para guardar los datos de las citas\n";
+        return false;
+    }
+
+    for (const auto& app : appointments)
+    {
+        file << app.appointment_id << ',' << app.patient_id << ',' << app.high_temp << ',' << app.diabetes << ',' << app.vih << ',' << app.covid << ',' << app.gay << '\n';
     }
     file.close();
     return true;
