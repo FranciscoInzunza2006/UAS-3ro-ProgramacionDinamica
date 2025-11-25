@@ -135,7 +135,7 @@ void Clinic::printPatients() const
     std::cout << separator << '\n';
     for (auto&& patient : patients)
     {
-        std::cout << "| " << std::setw(IDW) << std::setfill(IDF) << patient.getID() << std::setfill(' ');
+        std::cout << "| " << std::right << std::setw(IDW) << std::setfill(IDF) << patient.getID() << std::setfill(' ');
         std::cout << "| " << std::left << std::setw(NAMEW) << patient.getName();
         std::cout << "| " << std::left << std::setw(EMAILW) << patient.getEmail();
         std::cout << "| " << std::setw(PHONEW) << patient.getPhone();

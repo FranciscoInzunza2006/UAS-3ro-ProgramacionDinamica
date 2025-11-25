@@ -31,6 +31,10 @@ public:
           phone(phone),
           address(address)
     {
+        if (next_id <= id)
+        {
+            next_id = id+1;
+        }
     }
 
     //Patient(const Patient& other) = delete;
