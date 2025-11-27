@@ -21,6 +21,7 @@ struct User
 };
 
 std::size_t patient_next_id = 0;
+
 struct Patient
 {
     std::size_t id{};
@@ -32,6 +33,7 @@ struct Patient
 };
 
 std::size_t appointment_next_id = 0;
+
 struct Appointment
 {
     std::size_t id{};
@@ -68,7 +70,12 @@ bool login();
 int main()
 {
     system("chcp 65001 && cls");
-    loadData();
+    if (!loadData())
+    {
+        std::cout << "Un error ocurrió cargando los datos.";
+        return 1;
+    }
+
     logged_user = &users[0];
     //if (!login()) return 1;
 
@@ -197,7 +204,8 @@ void showPatients()
 
     for (const auto& p : patients)
     {
-        std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left << ' ';
+        std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
+            ' ';
         std::cout << std::setw(NAME_FS) << (p.first_name + ' ' + p.last_name);
         std::cout << std::setw(EMAIL_FS) << p.email;
         std::cout << std::setw(PHONE_FS) << p.phone_number;
@@ -207,6 +215,7 @@ void showPatients()
 
     std::cout << std::right;
 }
+
 //endregion
 
 //region Patient menu
@@ -234,11 +243,11 @@ void patientMenu(Patient& patient)
         std::cout << "Teléfono: " << patient.phone_number << "\n";
         std::cout << "Dirección: " << patient.address << "\n";
         separator();
-        std::cout << "  (" << CHECKUP <<") Realizar chequeo\n";
-        std::cout << "  (" << HISTORY <<") Mostrar historial medico\n";
-        std::cout << "  (" << MODIFY <<") Modificar información\n";
-        std::cout << "  (" << DELETE <<") Eliminar paciente\n";
-        std::cout << "  (" << EXIT <<") Salir\n";
+        std::cout << "  (" << CHECKUP << ") Realizar chequeo\n";
+        std::cout << "  (" << HISTORY << ") Mostrar historial medico\n";
+        std::cout << "  (" << MODIFY << ") Modificar información\n";
+        std::cout << "  (" << DELETE << ") Eliminar paciente\n";
+        std::cout << "  (" << EXIT << ") Salir\n";
 
         separator();
         const int option = input::getIntRange(1, EXIT);
@@ -287,7 +296,7 @@ void doCheckup(const Patient& patient)
 void showHistory(const Patient& patient)
 {
     bool has_history = false;
-    for (const auto & appointment : appointments)
+    for (const auto& appointment : appointments)
     {
         if (appointment.patient_id == patient.id)
         {
@@ -353,6 +362,16 @@ void modifyPatient(Patient& patient)
 //endregion
 
 //region Files In Out
+
+// Source - https://stackoverflow.com/a
+// Posted by GManNickG, modified by community. See post 'Timeline' for change history
+// Retrieved 2025-11-26, License - CC BY-SA 4.0
+
+bool is_empty(std::ifstream& pFile)
+{
+    return pFile.peek() == std::ifstream::traits_type::eof();
+}
+
 bool loadData()
 {
     if (users.empty())
@@ -369,27 +388,64 @@ bool loadData()
         std::cout << "Hubo un error abriendo el archivo con la información de los pacientes.\n";
         return false;
     }
-    while (!file.eof())
+    if (!is_empty(file))
     {
-        Patient patient;
+        while (!file.eof())
         {
-            std::string id_buffer;
-            std::getline(file, id_buffer, ',');
-            patient.id = std::stoull(id_buffer);
-
-            if (patient_next_id < patient.id)
+            Patient patient;
             {
-                patient_next_id = patient.id + 1;
-            }
-        }
-        std::getline(file, patient.first_name, ',');
-        std::getline(file, patient.last_name, ',');
-        std::getline(file, patient.email, ',');
-        std::getline(file, patient.phone_number, ',');
-        std::getline(file, patient.address);
+                std::string id_buffer;
+                std::getline(file, id_buffer, ',');
+                patient.id = std::stoull(id_buffer);
 
-        patients.push_back(patient);
+                if (patient_next_id < patient.id)
+                {
+                    patient_next_id = patient.id + 1;
+                }
+            }
+            std::getline(file, patient.first_name, ',');
+            std::getline(file, patient.last_name, ',');
+            std::getline(file, patient.email, ',');
+            std::getline(file, patient.phone_number, ',');
+            std::getline(file, patient.address);
+
+            patients.push_back(patient);
+        }
     }
+
+    file.close();
+
+    file.open("appointments.data");
+    if (!file.is_open())
+    {
+        std::cout << "Hubo un error abriendo el archivo con la citas realizadas.\n";
+        return false;
+    }
+    if (!is_empty(file))
+    {
+        while (!file.eof())
+        {
+            Appointment appointment;
+            {
+                std::string id_buffer;
+                std::getline(file, id_buffer, ',');
+                appointment.id = std::stoull(id_buffer);
+
+                std::getline(file, id_buffer, ',');
+                appointment.patient_id = std::stoull(id_buffer);
+
+                if (appointment_next_id < appointment.id)
+                {
+                    appointment_next_id = appointment.id + 1;
+                }
+            }
+            std::getline(file, appointment.foo);
+
+            appointments.push_back(appointment);
+        }
+    }
+
+    file.close();
 
     return true;
 }
