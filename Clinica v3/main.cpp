@@ -22,7 +22,7 @@ struct User
 std::size_t patient_next_id = 0;
 struct Patient
 {
-    std::size_t id;
+    std::size_t id{};
     std::string first_name;
     std::string last_name;
     std::string email;
@@ -231,6 +231,11 @@ bool loadData()
             std::string id_buffer;
             std::getline(file, id_buffer, ',');
             patient.id = std::stoull(id_buffer);
+
+            if (patient_next_id < patient.id)
+            {
+                patient_next_id = patient.id + 1;
+            }
         }
         std::getline(file, patient.first_name, ',');
         std::getline(file, patient.last_name, ',');
