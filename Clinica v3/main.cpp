@@ -7,6 +7,7 @@
 #include <string>
 #include <cstddef>
 #include <ctime>
+#include <iomanip>
 #include <optional>
 #include <vector>
 
@@ -20,6 +21,7 @@ struct User
 };
 
 std::size_t patient_next_id = 0;
+
 struct Patient
 {
     std::size_t id{};
@@ -79,7 +81,8 @@ int main()
 void mainMenu()
 {
     const bool is_admin = logged_user->id == 1;
-    while (true) {
+    while (true)
+    {
         std::system("cls");
 
         separator();
@@ -99,7 +102,8 @@ void mainMenu()
         const int option = input::getIntRange(1, is_admin ? 5 : 4);
         separator();
 
-        switch (option) {
+        switch (option)
+        {
         case 1:
             registerPatient();
             break;
@@ -170,13 +174,46 @@ void queryPatient()
 
 void showPatients()
 {
+    if (patients.empty())
+    {
+        std::cout << "No hay pacientes registrados.\n";
+        return;
+    }
+
+    // Field size
+    constexpr int ID_FS = 4;
+    constexpr int NAME_FS = 35;
+    constexpr int EMAIL_FS = 25;
+    constexpr int PHONE_FS = 11;
+    constexpr int ADDRESS_FS = 30;
+
+    std::cout << std::left << std::setw(ID_FS) << "ID" << ' ';
+    std::cout << std::setw(NAME_FS) << "Nombre completo";
+    std::cout << std::setw(EMAIL_FS) << "Correo";
+    std::cout << std::setw(PHONE_FS) << "Telefono";
+    std::cout << std::setw(ADDRESS_FS) << "Dirección";
+    std::cout << std::endl;
+
+    for (const auto& p : patients)
+    {
+        std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left << ' ';
+        std::cout << std::setw(NAME_FS) << (p.first_name + ' ' + p.last_name);
+        std::cout << std::setw(EMAIL_FS) << p.email;
+        std::cout << std::setw(PHONE_FS) << p.phone_number;
+        std::cout << std::setw(ADDRESS_FS) << p.address;
+        std::cout << '\n';
+    }
+
+    std::cout << std::right;
 }
+
 //endregion
 
 //region Patient menu
 void patientMenu(Patient& patient)
 {
-    while (true) {
+    while (true)
+    {
         std::system("cls");
 
         separator();
@@ -198,7 +235,8 @@ void patientMenu(Patient& patient)
         if (option == 4) return;
 
         separator();
-        switch (option) {
+        switch (option)
+        {
         case 1:
             doCheckup(patient);
             break;
@@ -221,7 +259,6 @@ void patientMenu(Patient& patient)
 
 void doCheckup(const Patient& patient)
 {
-
 }
 
 void deletePatient(const Patient& patient)
@@ -242,27 +279,32 @@ void modifyPatient(Patient& patient)
 {
     std::cin.ignore();
     std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
-    if (!new_name.empty()) {
+    if (!new_name.empty())
+    {
         patient.first_name = new_name;
     }
 
     std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
-    if (!new_last_name.empty()) {
+    if (!new_last_name.empty())
+    {
         patient.last_name = new_last_name;
     }
 
     std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
-    if (!new_email.empty()) {
+    if (!new_email.empty())
+    {
         patient.email = new_email;
     }
 
     std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
-    if (!new_phone_number.empty()) {
+    if (!new_phone_number.empty())
+    {
         patient.phone_number = new_phone_number;
     }
 
     std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
-    if (!new_address.empty()) {
+    if (!new_address.empty())
+    {
         patient.address = new_address;
     }
 }
@@ -315,6 +357,7 @@ bool saveData()
 {
     return true;
 }
+
 //endregion
 
 //region Login
@@ -354,4 +397,5 @@ bool login()
     std::cout << "Máximo numero de intentos alcanzado.\n";
     return false;
 }
+
 //endregion
