@@ -58,11 +58,11 @@ void registerPatient();
 void queryPatient();
 void showPatients();
 
-void patientMenu(Patient& patient);
-void doCheckup(const Patient& patient);
-void showHistory(const Patient& patient);
-void modifyPatient(Patient& patient);
-void deletePatient(const Patient& patient);
+void patientMenu(Patient* patient);
+void doCheckup(const Patient* patient);
+void showHistory(const Patient* patient);
+void modifyPatient(Patient* patient);
+void deletePatient(const Patient* patient);
 
 bool login();
 //endregion
@@ -164,22 +164,22 @@ void queryPatient()
     // Search by name too
     const std::size_t needle = input::getInt("Ingresa la ID del paciente: ");
 
-    std::optional<Patient> patient;
-    for (const auto& p : patients)
+    Patient* patient = nullptr;
+    for (auto& p : patients)
     {
         if (p.id == needle)
         {
-            patient = p;
+            patient = &p;
             break;
         }
     }
 
-    if (!patient.has_value())
+    if (patient == nullptr)
     {
         std::cout << "No se encontró el paciente.\n";
         return;
     }
-    patientMenu(patient.value());
+    patientMenu(patient);
 }
 
 void showPatients()
@@ -221,7 +221,7 @@ void showPatients()
 //endregion
 
 //region Patient menu
-void patientMenu(Patient& patient)
+void patientMenu(Patient* patient)
 {
     enum OPTIONS
     {
@@ -239,11 +239,11 @@ void patientMenu(Patient& patient)
         separator();
         std::cout << "Menu de paciente\n";
         separator();
-        std::cout << "ID: " << patient.id << "\n";
-        std::cout << "Nombre completo: " << patient.first_name << ' ' << patient.last_name << "\n";
-        std::cout << "Correo: " << patient.email << "\n";
-        std::cout << "Teléfono: " << patient.phone_number << "\n";
-        std::cout << "Dirección: " << patient.address << "\n";
+        std::cout << "ID: " << patient->id << "\n";
+        std::cout << "Nombre completo: " << patient->first_name << ' ' << patient->last_name << "\n";
+        std::cout << "Correo: " << patient->email << "\n";
+        std::cout << "Teléfono: " << patient->phone_number << "\n";
+        std::cout << "Dirección: " << patient->address << "\n";
         separator();
         std::cout << "  (" << CHECKUP << ") Realizar chequeo\n";
         std::cout << "  (" << HISTORY << ") Mostrar historial medico\n";
@@ -282,7 +282,7 @@ void patientMenu(Patient& patient)
     }
 }
 
-void doCheckup(const Patient& patient)
+void doCheckup(const Patient* patient)
 {
     Appointment a;
 
@@ -290,17 +290,17 @@ void doCheckup(const Patient& patient)
     a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
 
     a.id = ++appointment_next_id;
-    a.patient_id = patient.id;
+    a.patient_id = patient->id;
 
     appointments.push_back(a);
 }
 
-void showHistory(const Patient& patient)
+void showHistory(const Patient* patient)
 {
     bool has_history = false;
     for (const auto& appointment : appointments)
     {
-        if (appointment.patient_id == patient.id)
+        if (appointment.patient_id == patient->id)
         {
             has_history = true;
             std::cout << "ID: " << appointment.id << " COSO: " << appointment.foo << '\n';
@@ -313,12 +313,12 @@ void showHistory(const Patient& patient)
     }
 }
 
-void deletePatient(const Patient& patient)
+void deletePatient(const Patient* patient)
 {
     int index = 0;
     for (const auto& p : patients)
     {
-        if (p.id == patient.id) break;
+        if (p.id == patient->id) break;
         index++;
     }
     patients.erase(patients.begin() + index);
@@ -327,37 +327,37 @@ void deletePatient(const Patient& patient)
     //patient.id = -1;
 }
 
-void modifyPatient(Patient& patient)
+void modifyPatient(Patient* patient)
 {
     std::cin.ignore();
     std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
     if (!new_name.empty())
     {
-        patient.first_name = new_name;
+        patient->first_name = new_name;
     }
 
     std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
     if (!new_last_name.empty())
     {
-        patient.last_name = new_last_name;
+        patient->last_name = new_last_name;
     }
 
     std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
     if (!new_email.empty())
     {
-        patient.email = new_email;
+        patient->email = new_email;
     }
 
     std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
     if (!new_phone_number.empty())
     {
-        patient.phone_number = new_phone_number;
+        patient->phone_number = new_phone_number;
     }
 
     std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
     if (!new_address.empty())
     {
-        patient.address = new_address;
+        patient->address = new_address;
     }
 }
 
