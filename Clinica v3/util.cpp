@@ -59,6 +59,15 @@ namespace input
         return str;
     }
 
+    std::string getLine(const std::string& message) {
+        std::string str;
+        std::cout << message;
+
+        std::getline(std::cin, str);
+
+        return str;
+    }
+
 
     void waitForInput()
     {

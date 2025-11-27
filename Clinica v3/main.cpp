@@ -50,11 +50,14 @@ bool loadData();
 bool saveData();
 
 void mainMenu();
-void patientMenu(Patient& patient);
-
 void registerPatient();
 void queryPatient();
 void showPatients();
+
+void patientMenu(Patient& patient);
+void doCheckup(const Patient& patient);
+void modifyPatient(Patient& patient);
+void deletePatient(const Patient& patient);
 
 bool login();
 //endregion
@@ -197,15 +200,16 @@ void patientMenu(Patient& patient)
         separator();
         switch (option) {
         case 1:
-
+            doCheckup(patient);
             break;
 
         case 2:
-
+            modifyPatient(patient);
             break;
 
         case 3:
-
+            deletePatient(patient);
+            return;
             break;
 
         default: ;
@@ -214,6 +218,55 @@ void patientMenu(Patient& patient)
         input::waitForInput();
     }
 }
+
+void doCheckup(const Patient& patient)
+{
+
+}
+
+void deletePatient(const Patient& patient)
+{
+    size_t index = 0;
+    for (const auto& p : patients)
+    {
+        if (p.id == patient.id) break;
+        index++;
+    }
+    patients.erase(patients.begin() + index);
+
+    // If the id is -1 the patient won't be saved... Nah, just nuke it
+    //patient.id = -1;
+}
+
+void modifyPatient(Patient& patient)
+{
+    std::cin.ignore();
+    std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
+    if (!new_name.empty()) {
+        patient.first_name = new_name;
+    }
+
+    std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
+    if (!new_last_name.empty()) {
+        patient.last_name = new_last_name;
+    }
+
+    std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
+    if (!new_email.empty()) {
+        patient.email = new_email;
+    }
+
+    std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
+    if (!new_phone_number.empty()) {
+        patient.phone_number = new_phone_number;
+    }
+
+    std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
+    if (!new_address.empty()) {
+        patient.address = new_address;
+    }
+}
+
 //endregion
 
 //region Files In Out

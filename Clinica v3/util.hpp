@@ -13,16 +13,17 @@ namespace input
 
     std::string getString(const std::string& message = "");
     std::string getStringMaxLength(size_t max_length, const std::string& message = "");
+    std::string getLine(const std::string& message = "");
 
     void waitForInput();
 }
 
-inline void clearScreen() {
+inline void separator() {
     std::cout << "────────────────────────────────────────────────────────────────\n";
     //std::cout << "-----------------------------------------------" << std::endl;
 }
 
-inline void separator()
+inline void clearScreen()
 {
     std::system("cls");
 }
