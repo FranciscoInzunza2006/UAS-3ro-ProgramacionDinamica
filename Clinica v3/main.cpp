@@ -206,7 +206,6 @@ void showPatients()
 
     std::cout << std::right;
 }
-
 //endregion
 
 //region Patient menu
@@ -263,7 +262,7 @@ void doCheckup(const Patient& patient)
 
 void deletePatient(const Patient& patient)
 {
-    size_t index = 0;
+    int index = 0;
     for (const auto& p : patients)
     {
         if (p.id == patient.id) break;
