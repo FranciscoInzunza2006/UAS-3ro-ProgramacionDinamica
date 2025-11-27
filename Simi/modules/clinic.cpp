@@ -167,13 +167,13 @@ void Clinic::patientMenu(Patient& patient)
         std::cout << "(1) Realizar chequeo" << '\n';
         std::cout << "(2) Mostrar más información" << '\n';
         std::cout << "(3) Modificar información" << '\n';
-        std::cout << "(4) Eliminar paciente" << '\n';
-        std::cout << "(5) Salir" << '\n';
+        std::cout << "(4) Eliminar paciente" << '\n';Wstd::cout << "(5) Mostrar citas del paciente" << '\n';
+        std::cout << "(6) Salir" << '\n';
 
         cool::separator();
 
-        const int chosen_option = input_handler::getIntRange(1, 5);
-        if (chosen_option == 5)
+        const int chosen_option = input_handler::getIntRange(1, 6);
+        if (chosen_option == 6)
             return;
 
         cool::clearScreen();
@@ -195,6 +195,17 @@ void Clinic::patientMenu(Patient& patient)
         case 4:
             deletePatient(patient);
             return;
+
+        case 5:
+            for (const auto& ap : appointments)
+            {
+                if (ap.patient_id == patient.getID())
+                {
+
+                }
+            }
+            break;
+
         default: ;
         }
 
