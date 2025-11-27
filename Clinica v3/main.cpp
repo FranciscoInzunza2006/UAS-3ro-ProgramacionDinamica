@@ -363,15 +363,6 @@ void modifyPatient(Patient& patient)
 
 //region Files In Out
 
-// Source - https://stackoverflow.com/a
-// Posted by GManNickG, modified by community. See post 'Timeline' for change history
-// Retrieved 2025-11-26, License - CC BY-SA 4.0
-
-bool is_empty(std::ifstream& pFile)
-{
-    return pFile.peek() == std::ifstream::traits_type::eof();
-}
-
 bool loadData()
 {
     if (users.empty())
@@ -388,29 +379,27 @@ bool loadData()
         std::cout << "Hubo un error abriendo el archivo con la información de los pacientes.\n";
         return false;
     }
-    if (!is_empty(file))
+
+    while (file.peek() != std::ifstream::traits_type::eof())
     {
-        while (!file.eof())
+        Patient patient;
         {
-            Patient patient;
+            std::string id_buffer;
+            std::getline(file, id_buffer, ',');
+            patient.id = std::stoull(id_buffer);
+
+            if (patient_next_id < patient.id)
             {
-                std::string id_buffer;
-                std::getline(file, id_buffer, ',');
-                patient.id = std::stoull(id_buffer);
-
-                if (patient_next_id < patient.id)
-                {
-                    patient_next_id = patient.id + 1;
-                }
+                patient_next_id = patient.id + 1;
             }
-            std::getline(file, patient.first_name, ',');
-            std::getline(file, patient.last_name, ',');
-            std::getline(file, patient.email, ',');
-            std::getline(file, patient.phone_number, ',');
-            std::getline(file, patient.address);
-
-            patients.push_back(patient);
         }
+        std::getline(file, patient.first_name, ',');
+        std::getline(file, patient.last_name, ',');
+        std::getline(file, patient.email, ',');
+        std::getline(file, patient.phone_number, ',');
+        std::getline(file, patient.address);
+
+        patients.push_back(patient);
     }
 
     file.close();
@@ -421,28 +410,26 @@ bool loadData()
         std::cout << "Hubo un error abriendo el archivo con la citas realizadas.\n";
         return false;
     }
-    if (!is_empty(file))
+
+    while (file.peek() != std::ifstream::traits_type::eof())
     {
-        while (!file.eof())
+        Appointment appointment;
         {
-            Appointment appointment;
+            std::string id_buffer;
+            std::getline(file, id_buffer, ',');
+            appointment.id = std::stoull(id_buffer);
+
+            std::getline(file, id_buffer, ',');
+            appointment.patient_id = std::stoull(id_buffer);
+
+            if (appointment_next_id < appointment.id)
             {
-                std::string id_buffer;
-                std::getline(file, id_buffer, ',');
-                appointment.id = std::stoull(id_buffer);
-
-                std::getline(file, id_buffer, ',');
-                appointment.patient_id = std::stoull(id_buffer);
-
-                if (appointment_next_id < appointment.id)
-                {
-                    appointment_next_id = appointment.id + 1;
-                }
+                appointment_next_id = appointment.id + 1;
             }
-            std::getline(file, appointment.foo);
-
-            appointments.push_back(appointment);
         }
+        std::getline(file, appointment.foo);
+
+        appointments.push_back(appointment);
     }
 
     file.close();
@@ -488,9 +475,11 @@ bool saveData()
     file.close();
 
     // Replace older file
+    std::remove("patients.data.bak");
     std::rename("patients.data", "patients.data.bak");
     std::rename("patients.temp", "patients.data");
 
+    std::remove("appointments.data.bak");
     std::rename("appointments.data", "appointments.data.bak");
     std::rename("appointments.temp", "appointments.data");
     return true;
