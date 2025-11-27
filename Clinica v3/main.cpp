@@ -215,6 +215,32 @@ bool loadData()
         users.push_back({1, "admin", "admin"});
     }
 
+    std::ifstream file;
+
+    // Pacientes
+    file.open("patients.data");
+    if (!file.is_open())
+    {
+        std::cout << "Hubo un error abriendo el archivo con la información de los pacientes.\n";
+        return false;
+    }
+    while (!file.eof())
+    {
+        Patient patient;
+        {
+            std::string id_buffer;
+            std::getline(file, id_buffer, ',');
+            patient.id = std::stoull(id_buffer);
+        }
+        std::getline(file, patient.first_name, ',');
+        std::getline(file, patient.last_name, ',');
+        std::getline(file, patient.email, ',');
+        std::getline(file, patient.phone_number, ',');
+        std::getline(file, patient.address);
+
+        patients.push_back(patient);
+    }
+
     return true;
 }
 
