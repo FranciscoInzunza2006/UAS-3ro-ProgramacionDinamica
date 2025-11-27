@@ -390,10 +390,7 @@ bool loadData()
             std::getline(file, id_buffer, ',');
             patient.id = std::stoull(id_buffer);
 
-            if (patient_next_id < patient.id)
-            {
-                patient_next_id = patient.id + 1;
-            }
+            if (patient_next_id < patient.id) patient_next_id = patient.id;
         }
         std::getline(file, patient.first_name, ',');
         std::getline(file, patient.last_name, ',');
@@ -424,10 +421,7 @@ bool loadData()
             std::getline(file, id_buffer, ',');
             appointment.patient_id = std::stoull(id_buffer);
 
-            if (appointment_next_id < appointment.id)
-            {
-                appointment_next_id = appointment.id + 1;
-            }
+            if (appointment_next_id < appointment.id) appointment_next_id = appointment.id;
         }
         std::getline(file, appointment.foo);
 
