@@ -7,6 +7,7 @@
 #include <string>
 #include <cstddef>
 #include <ctime>
+#include <optional>
 #include <vector>
 
 #include "util.hpp"
@@ -18,6 +19,7 @@ struct User
     std::string password;
 };
 
+std::size_t patient_next_id = 0;
 struct Patient
 {
     std::size_t id;
@@ -47,7 +49,11 @@ bool loadData();
 bool saveData();
 
 void mainMenu();
-void patientMenu();
+void patientMenu(Patient& patient);
+
+void registerPatient();
+void queryPatient();
+void showPatients();
 
 bool login();
 
@@ -132,15 +138,15 @@ void mainMenu()
 
         switch (option) {
         case 1:
-            std::cout << "Añadir paciente.";
+            registerPatient();
             break;
 
         case 2:
-            std::cout << "Consultar pacientes.";
+            queryPatient();
             break;
 
         case 3:
-            std::cout << "Mostrar pacientes registrados.";
+            showPatients();
             break;
 
         case 4:
@@ -158,13 +164,53 @@ void mainMenu()
     }
 }
 
-void patientMenu()
+void patientMenu(Patient& patient)
 {
+    while (true) {
+        std::system("cls");
+
+        separator();
+        std::cout << "Menu de paciente\n";
+        separator();
+        std::cout << "ID: " << patient.id << "\n";
+        std::cout << "Nombre completo: " << patient.first_name << ' ' << patient.last_name << "\n";
+        std::cout << "Correo: " << patient.email << "\n";
+        std::cout << "Teléfono: " << patient.phone_number << "\n";
+        std::cout << "Dirección: " << patient.address << "\n";
+        separator();
+        std::cout << "  (1) Realizar chequeo\n";
+        std::cout << "  (2) Modificar información\n";
+        std::cout << "  (3) Eliminar paciente\n";
+        std::cout << "  (4) Salir\n";
+
+        separator();
+        const int option = input::getIntRange(1, 4);
+        if (option == 4) return;
+
+        separator();
+        switch (option) {
+        case 1:
+
+            break;
+
+        case 2:
+
+            break;
+
+        case 3:
+
+            break;
+
+        default: ;
+        }
+        separator();
+        input::waitForInput();
+    }
 }
 
 bool loadData()
 {
-    if (users.size() == 0)
+    if (users.empty())
     {
         users.push_back({1, "admin", "admin"});
     }
@@ -175,4 +221,49 @@ bool loadData()
 bool saveData()
 {
     return true;
+}
+
+void registerPatient()
+{
+    constexpr int PHONE_NUMBER_LENGTH = 10;
+    Patient patient;
+    patient.id = ++patient_next_id;
+
+    patient.first_name = input::getString("Ingresa el nombre del paciente: ");
+    patient.last_name = input::getString("Ingresa los apellidos: ");
+
+    patient.email = input::getString("Ingresa el correo: ");
+    patient.phone_number = input::getStringMaxLength(PHONE_NUMBER_LENGTH, "Ingresa el numero de telefono: ");
+    patient.address = input::getString("Ingresa la dirección: ");
+
+    std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
+
+    patients.push_back(patient);
+}
+
+void queryPatient()
+{
+    // Search by name too
+    const std::size_t needle = input::getInt("Ingresa la ID del paciente: ");
+
+    std::optional<Patient> patient;
+    for (const auto& p : patients)
+    {
+        if (p.id == needle)
+        {
+            patient = p;
+            break;
+        }
+    }
+
+    if (!patient.has_value())
+    {
+        std::cout << "No se encontró el paciente.\n";
+        return;
+    }
+    patientMenu(patient.value());
+}
+
+void showPatients()
+{
 }

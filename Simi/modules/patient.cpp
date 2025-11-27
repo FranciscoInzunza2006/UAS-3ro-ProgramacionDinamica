@@ -22,7 +22,7 @@ Patient Patient::create()
     patient.phone = input_handler::getStringMaxLength(PHONE_NUMBER_LENGTH, "Ingresa el numero de telefono: ");
     patient.address = input_handler::getString("Ingresa la dirección: ");
 
-    //std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
+    std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
 
     return patient;
 }
