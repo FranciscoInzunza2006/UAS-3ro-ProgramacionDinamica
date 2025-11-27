@@ -61,8 +61,8 @@ int main()
 {
     system("chcp 65001 && cls");
     loadData();
-
-    if (!login()) return 1;
+    logged_user = &users[0];
+    //if (!login()) return 1;
 
     mainMenu();
 
