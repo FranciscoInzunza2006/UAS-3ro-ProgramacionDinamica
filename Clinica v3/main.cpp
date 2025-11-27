@@ -21,7 +21,6 @@ struct User
 };
 
 std::size_t patient_next_id = 0;
-
 struct Patient
 {
     std::size_t id{};
@@ -32,10 +31,11 @@ struct Patient
     std::string address;
 };
 
+std::size_t appointment_next_id = 0;
 struct Appointment
 {
-    std::size_t id;
-    std::size_t patient_id;
+    std::size_t id{};
+    std::size_t patient_id{};
 
     std::string foo;
 };
@@ -58,6 +58,7 @@ void showPatients();
 
 void patientMenu(Patient& patient);
 void doCheckup(const Patient& patient);
+void showHistory(const Patient& patient);
 void modifyPatient(Patient& patient);
 void deletePatient(const Patient& patient);
 
@@ -211,6 +212,15 @@ void showPatients()
 //region Patient menu
 void patientMenu(Patient& patient)
 {
+    enum OPTIONS
+    {
+        CHECKUP = 1,
+        HISTORY,
+        MODIFY,
+        DELETE,
+        EXIT,
+    };
+
     while (true)
     {
         std::system("cls");
@@ -224,30 +234,35 @@ void patientMenu(Patient& patient)
         std::cout << "Teléfono: " << patient.phone_number << "\n";
         std::cout << "Dirección: " << patient.address << "\n";
         separator();
-        std::cout << "  (1) Realizar chequeo\n";
-        std::cout << "  (2) Modificar información\n";
-        std::cout << "  (3) Eliminar paciente\n";
-        std::cout << "  (4) Salir\n";
+        std::cout << "  (" << CHECKUP <<") Realizar chequeo\n";
+        std::cout << "  (" << HISTORY <<") Mostrar historial medico\n";
+        std::cout << "  (" << MODIFY <<") Modificar información\n";
+        std::cout << "  (" << DELETE <<") Eliminar paciente\n";
+        std::cout << "  (" << EXIT <<") Salir\n";
 
         separator();
-        const int option = input::getIntRange(1, 4);
-        if (option == 4) return;
+        const int option = input::getIntRange(1, EXIT);
+        if (option == EXIT) return;
 
         separator();
         switch (option)
         {
-        case 1:
+        case CHECKUP:
             doCheckup(patient);
             break;
 
-        case 2:
+        case HISTORY:
+            showHistory(patient);
+            break;
+
+        case MODIFY:
             modifyPatient(patient);
             break;
 
-        case 3:
+        case DELETE:
             deletePatient(patient);
+            std::cout << "Paciente eliminado.\n";
             return;
-            break;
 
         default: ;
         }
@@ -258,6 +273,33 @@ void patientMenu(Patient& patient)
 
 void doCheckup(const Patient& patient)
 {
+    Appointment a;
+
+    std::cin.ignore();
+    a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
+
+    a.id = ++appointment_next_id;
+    a.patient_id = patient.id;
+
+    appointments.push_back(a);
+}
+
+void showHistory(const Patient& patient)
+{
+    bool has_history = false;
+    for (const auto & appointment : appointments)
+    {
+        if (appointment.patient_id == patient.id)
+        {
+            has_history = true;
+            std::cout << "ID: " << appointment.id << " COSO: " << appointment.foo << '\n';
+        }
+    }
+
+    if (!has_history)
+    {
+        std::cout << "El historial esta vacio.\n";
+    }
 }
 
 void deletePatient(const Patient& patient)
