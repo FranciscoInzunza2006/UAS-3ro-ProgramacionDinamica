@@ -45,6 +45,7 @@ std::vector<Appointment> appointments;
 
 const User* logged_user;
 
+//region Prototypes
 bool loadData();
 bool saveData();
 
@@ -56,12 +57,7 @@ void queryPatient();
 void showPatients();
 
 bool login();
-
-static void separator()
-{
-    std::cout << "────────────────────────────────────────────────────────────────\n";
-    //std::cout << "-----------------------------------------------" << std::endl;
-}
+//endregion
 
 int main()
 {
@@ -76,43 +72,7 @@ int main()
     return 0;
 }
 
-static bool loginAttempt(const std::string_view username, const std::string_view password)
-{
-    for (const auto& user : users)
-    {
-        if (user.username == username)
-        {
-            if (user.password == password)
-            {
-                logged_user = &user;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool login()
-{
-    constexpr int MAX_ATTEMPTS = 3;
-    for (int i = 0; i < MAX_ATTEMPTS; i++)
-    {
-        const std::string username = input::getString("Ingresa tu usuario: ");
-        const std::string password = input::getString("Ingresa tu contraseña: ");
-
-        if (loginAttempt(username, password))
-        {
-            std::cout << "Bienvenido " << username << ".\n";
-            return true;
-        }
-
-        std::cout << "Usuario o contraseña inválidos.\n";
-    }
-
-    std::cout << "Máximo numero de intentos alcanzado.\n";
-    return false;
-}
-
+//region Main menu
 void mainMenu()
 {
     const bool is_admin = logged_user->id == 1;
@@ -164,6 +124,53 @@ void mainMenu()
     }
 }
 
+void registerPatient()
+{
+    constexpr int PHONE_NUMBER_LENGTH = 10;
+    Patient patient;
+    patient.id = ++patient_next_id;
+
+    patient.first_name = input::getString("Ingresa el nombre del paciente: ");
+    patient.last_name = input::getString("Ingresa los apellidos: ");
+
+    patient.email = input::getString("Ingresa el correo: ");
+    patient.phone_number = input::getStringMaxLength(PHONE_NUMBER_LENGTH, "Ingresa el numero de telefono: ");
+    patient.address = input::getString("Ingresa la dirección: ");
+
+    std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
+
+    patients.push_back(patient);
+}
+
+void queryPatient()
+{
+    // Search by name too
+    const std::size_t needle = input::getInt("Ingresa la ID del paciente: ");
+
+    std::optional<Patient> patient;
+    for (const auto& p : patients)
+    {
+        if (p.id == needle)
+        {
+            patient = p;
+            break;
+        }
+    }
+
+    if (!patient.has_value())
+    {
+        std::cout << "No se encontró el paciente.\n";
+        return;
+    }
+    patientMenu(patient.value());
+}
+
+void showPatients()
+{
+}
+//endregion
+
+//region Patient menu
 void patientMenu(Patient& patient)
 {
     while (true) {
@@ -207,7 +214,9 @@ void patientMenu(Patient& patient)
         input::waitForInput();
     }
 }
+//endregion
 
+//region Files In Out
 bool loadData()
 {
     if (users.empty())
@@ -253,48 +262,43 @@ bool saveData()
 {
     return true;
 }
+//endregion
 
-void registerPatient()
+//region Login
+static bool loginAttempt(const std::string_view username, const std::string_view password)
 {
-    constexpr int PHONE_NUMBER_LENGTH = 10;
-    Patient patient;
-    patient.id = ++patient_next_id;
-
-    patient.first_name = input::getString("Ingresa el nombre del paciente: ");
-    patient.last_name = input::getString("Ingresa los apellidos: ");
-
-    patient.email = input::getString("Ingresa el correo: ");
-    patient.phone_number = input::getStringMaxLength(PHONE_NUMBER_LENGTH, "Ingresa el numero de telefono: ");
-    patient.address = input::getString("Ingresa la dirección: ");
-
-    std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
-
-    patients.push_back(patient);
-}
-
-void queryPatient()
-{
-    // Search by name too
-    const std::size_t needle = input::getInt("Ingresa la ID del paciente: ");
-
-    std::optional<Patient> patient;
-    for (const auto& p : patients)
+    for (const auto& user : users)
     {
-        if (p.id == needle)
+        if (user.username == username)
         {
-            patient = p;
-            break;
+            if (user.password == password)
+            {
+                logged_user = &user;
+                return true;
+            }
         }
     }
-
-    if (!patient.has_value())
-    {
-        std::cout << "No se encontró el paciente.\n";
-        return;
-    }
-    patientMenu(patient.value());
+    return false;
 }
 
-void showPatients()
+bool login()
 {
+    constexpr int MAX_ATTEMPTS = 3;
+    for (int i = 0; i < MAX_ATTEMPTS; i++)
+    {
+        const std::string username = input::getString("Ingresa tu usuario: ");
+        const std::string password = input::getString("Ingresa tu contraseña: ");
+
+        if (loginAttempt(username, password))
+        {
+            std::cout << "Bienvenido " << username << ".\n";
+            return true;
+        }
+
+        std::cout << "Usuario o contraseña inválidos.\n";
+    }
+
+    std::cout << "Máximo numero de intentos alcanzado.\n";
+    return false;
 }
+//endregion

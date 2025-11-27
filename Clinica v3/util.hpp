@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <iostream>
 #include <string>
 
 namespace input
@@ -16,4 +17,12 @@ namespace input
     void waitForInput();
 }
 
-void clearScreen();
+inline void clearScreen() {
+    std::cout << "────────────────────────────────────────────────────────────────\n";
+    //std::cout << "-----------------------------------------------" << std::endl;
+}
+
+inline void separator()
+{
+    std::system("cls");
+}

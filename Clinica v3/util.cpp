@@ -65,8 +65,3 @@ namespace input
         std::system("pause");
     }
 }
-
-void clearScreen()
-{
-    std::system("cls");
-}
