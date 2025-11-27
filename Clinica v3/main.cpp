@@ -150,7 +150,9 @@ void registerPatient()
 
     patient.email = input::getString("Ingresa el correo: ");
     patient.phone_number = input::getStringMaxLength(PHONE_NUMBER_LENGTH, "Ingresa el numero de telefono: ");
-    patient.address = input::getString("Ingresa la dirección: ");
+
+    std::cin.ignore();
+    patient.address = input::getLine("Ingresa la dirección: ");
 
     std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
 
