@@ -452,6 +452,47 @@ bool loadData()
 
 bool saveData()
 {
+    std::ofstream file;
+
+    // Pacientes
+    file.open("patients.temp");
+    if (!file.is_open())
+    {
+        std::cout << "No se pudó abrir el archivo para guardar la información de los pacientes.\n";
+        return false;
+    }
+    for (const auto& p : patients)
+    {
+        file << p.id << ","
+            << p.first_name << ","
+            << p.last_name << ","
+            << p.email << ","
+            << p.phone_number << ","
+            << p.address << "\n";
+    }
+
+    file.close();
+
+    file.open("appointments.temp");
+    if (!file.is_open())
+    {
+        std::cout << "No se pudó abrir el archivo para guardar la información de las citas.\n";
+        return false;
+    }
+    for (const auto& a : appointments)
+    {
+        file << a.id << ","
+            << a.patient_id << ","
+            << a.foo << "\n";
+    }
+    file.close();
+
+    // Replace older file
+    std::rename("patients.data", "patients.data.bak");
+    std::rename("patients.temp", "patients.data");
+
+    std::rename("appointments.data", "appointments.data.bak");
+    std::rename("appointments.temp", "appointments.data");
     return true;
 }
 
