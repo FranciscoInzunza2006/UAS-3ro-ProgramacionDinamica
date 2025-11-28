@@ -433,13 +433,7 @@ void showHistory(const Patient* patient)
 
 void deletePatient(const Patient* patient)
 {
-    int index = 0;
-    for (const auto& p : patients)
-    {
-        if (p.id == patient->id) break;
-        index++;
-    }
-    patients.erase(patients.begin() + index);
+    patients.erase(std::vector<Patient>::const_iterator(patient));
 
     // If the id is -1 the patient won't be saved... Nah, just nuke it
     //patient.id = -1;
@@ -487,8 +481,11 @@ bool loadData()
 {
     if (!User::loadAll(users))
     {
-        users.push_back({1, "admin", "admin"});
-        User::next_id = 1;
+        User admin;
+        admin.assignId();
+        admin.username = "admin";
+        admin.password = "admin";
+        users.push_back(admin);
     }
 
     if (!Patient::loadAll(patients)) return false;
@@ -524,7 +521,7 @@ static bool loginAttempt(const std::string_view username, const std::string_view
                 logged_user = &user;
                 return true;
             }
-            return false;
+            return false; // Optimization because usernames are unique
         }
     }
     return false;
