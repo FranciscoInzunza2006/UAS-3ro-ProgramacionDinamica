@@ -8,14 +8,14 @@
 #include <cstddef>
 #include <ctime>
 #include <iomanip>
-#include <optional>
 #include <vector>
 
 #include "util.hpp"
 
+std::size_t user_next_id = 0;
 struct User
 {
-    std::size_t id;
+    std::size_t id{};
     std::string username;
     std::string password;
 };
@@ -77,7 +77,7 @@ int main()
     }
 
     logged_user = &users[0];
-    //if (!login()) return 1;
+    if (!login()) return 1;
 
     mainMenu();
 
@@ -367,14 +367,41 @@ void modifyPatient(Patient* patient)
 
 bool loadData()
 {
+    std::ifstream file;
+    //region Usuarios
+    file.open("users.data");
+    if (!file.is_open())
+    {
+        std::cout << "Hubo un error abriendo el archivo con la información de los usuarios.\n";
+        return false;
+    }
+
+    while (file.peek() != std::ifstream::traits_type::eof())
+    {
+        User user;
+        {
+            std::string id_buffer;
+            std::getline(file, id_buffer, ',');
+            user.id = std::stoull(id_buffer);
+
+            if (user_next_id < user.id) patient_next_id = user.id;
+        }
+        std::getline(file, user.username, ',');
+        std::getline(file, user.password);
+
+        users.push_back(user);
+    }
+
+    file.close();
     if (users.empty())
     {
         users.push_back({1, "admin", "admin"});
+        user_next_id = 1;
     }
+    //endregion
 
-    std::ifstream file;
 
-    // Pacientes
+    //region Pacientes
     file.open("patients.data");
     if (!file.is_open())
     {
@@ -402,7 +429,9 @@ bool loadData()
     }
 
     file.close();
+    //endregion
 
+    //region Citas
     file.open("appointments.data");
     if (!file.is_open())
     {
@@ -429,6 +458,7 @@ bool loadData()
     }
 
     file.close();
+    //endregion
 
     return true;
 }
@@ -436,6 +466,21 @@ bool loadData()
 bool saveData()
 {
     std::ofstream file;
+
+    // Usuarios
+    file.open("users.temp");
+    if (!file.is_open())
+    {
+        std::cout << "No se pudó abrir el archivo para guardar la información de los usuarios.\n";
+        return false;
+    }
+    for (const auto& u : users)
+    {
+        file << u.id << ","
+            << u.username << ","
+            << u.password << "\n";
+    }
+    file.close();
 
     // Pacientes
     file.open("patients.temp");
@@ -471,6 +516,10 @@ bool saveData()
     file.close();
 
     // Replace older file
+    std::remove("users.data.bak");
+    std::rename("users.data", "users.data.bak");
+    std::rename("users.temp", "users.data");
+
     std::remove("patients.data.bak");
     std::rename("patients.data", "patients.data.bak");
     std::rename("patients.temp", "patients.data");
