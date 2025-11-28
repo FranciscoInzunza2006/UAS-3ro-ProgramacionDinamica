@@ -20,10 +20,11 @@
 // SystemData: CRTP base class
 // Each Derived class gets its own next_id and file_name
 // -------------------------------------------------------------
-template <typename Derived>
+template <typename T>
 class SystemData
 {
 public:
+    static inline std::size_t next_id = 0;
     std::size_t id{};
 
     void assignId()
@@ -31,15 +32,15 @@ public:
         id = ++next_id;
     }
 
-    static bool loadAll(std::vector<Derived>& out)
+    static bool loadAll(std::vector<T>& out)
     {
-        std::ifstream file(Derived::file_name);
+        std::ifstream file(T::file_name);
         if (!file.is_open())
             return false;
 
         while (file.peek() != std::ifstream::traits_type::eof())
         {
-            Derived item;
+            T item;
 
             // Read ID
             std::string id_buf;
@@ -50,30 +51,38 @@ public:
                 next_id = item.id;
 
             // Load derived fields
-            if (!Derived::loadOne(item, file)) break;
+            if (!T::loadOne(item, file)) break;
 
             out.push_back(item);
         }
         return true;
     }
 
-    static bool saveAll(const std::vector<Derived>& items)
+    static bool saveAll(const std::vector<T>& items)
     {
-        const std::string temp_name = std::string(Derived::file_name) + ".temp";
+        const std::string temp_name = std::string(T::file_name) + ".temp";
         std::ofstream file(temp_name);
         if (!file.is_open()) return false;
 
         for (const auto& item : items)
         {
             file << item.id << ",";
-            Derived::saveOne(item, file);
+            T::saveOne(item, file);
             file << "\n";
         }
         return true;
     }
 
-public:
-    static inline std::size_t next_id = 0;
+    static void updateFiles()
+    {
+        const std::string name = T::file_name;
+        const std::string temp_name = name + ".temp";
+        const std::string backup_name = name + ".bak";
+
+        std::remove(backup_name.c_str());
+        std::rename(name.c_str(), backup_name.c_str());
+        std::rename(temp_name.c_str(), name.c_str());
+    }
 };
 
 class User : public SystemData<User>
@@ -253,6 +262,7 @@ void registerPatient()
     constexpr int PHONE_NUMBER_LENGTH = 10;
     Patient patient;
 
+    patient.assignId();
     patient.first_name = input::getString("Ingresa el nombre del paciente: ");
     patient.last_name = input::getString("Ingresa los apellidos: ");
 
@@ -473,9 +483,6 @@ void modifyPatient(Patient* patient)
 
 //region Files In Out
 
-// -------------------------------------------------------------
-// Load / Save functions
-// -------------------------------------------------------------
 bool loadData()
 {
     if (!User::loadAll(users))
@@ -497,17 +504,9 @@ bool saveData()
     if (!Appointment::saveAll(appointments)) return false;
 
     // Replace originals
-    std::remove("users.data.bak");
-    std::rename("users.data", "users.data.bak");
-    std::rename("users.data.temp", "users.data");
-
-    std::remove("patients.data.bak");
-    std::rename("patients.data", "patients.data.bak");
-    std::rename("patients.data.temp", "patients.data");
-
-    std::remove("appointments.data.bak");
-    std::rename("appointments.data", "appointments.data.bak");
-    std::rename("appointments.data.temp", "appointments.data");
+    User::updateFiles();
+    Patient::updateFiles();
+    Appointment::updateFiles();
 
     return true;
 }
