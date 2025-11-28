@@ -12,34 +12,143 @@
 
 #include "util.hpp"
 
-std::size_t user_next_id = 0;
-struct User
+//
+// Created by Franc on 26/11/2025.
+//
+
+// -------------------------------------------------------------
+// SystemData: CRTP base class
+// Each Derived class gets its own next_id and file_name
+// -------------------------------------------------------------
+template <typename Derived>
+class SystemData
 {
+public:
     std::size_t id{};
-    std::string username;
-    std::string password;
+
+    void assignId()
+    {
+        id = ++next_id;
+    }
+
+    static bool loadAll(std::vector<Derived>& out)
+    {
+        std::ifstream file(Derived::file_name);
+        if (!file.is_open())
+            return false;
+
+        while (file.peek() != std::ifstream::traits_type::eof())
+        {
+            Derived item;
+
+            // Read ID
+            std::string id_buf;
+            if (!std::getline(file, id_buf, ',')) break;
+            item.id = std::stoull(id_buf);
+
+            if (next_id < item.id)
+                next_id = item.id;
+
+            // Load derived fields
+            if (!Derived::loadOne(item, file)) break;
+
+            out.push_back(item);
+        }
+        return true;
+    }
+
+    static bool saveAll(const std::vector<Derived>& items)
+    {
+        const std::string temp_name = std::string(Derived::file_name) + ".temp";
+        std::ofstream file(temp_name);
+        if (!file.is_open()) return false;
+
+        for (const auto& item : items)
+        {
+            file << item.id << ",";
+            Derived::saveOne(item, file);
+            file << "\n";
+        }
+        return true;
+    }
+
+public:
+    static inline std::size_t next_id = 0;
 };
 
-std::size_t patient_next_id = 0;
-
-struct Patient
+class User : public SystemData<User>
 {
-    std::size_t id{};
+public:
+    static constexpr auto file_name = "users.data";
+
+    std::string username;
+    std::string password;
+
+    static bool loadOne(User& u, std::istream& file)
+    {
+        std::getline(file, u.username, ',');
+        std::getline(file, u.password);
+        return true;
+    }
+
+    static void saveOne(const User& u, std::ostream& file)
+    {
+        file << u.username << "," << u.password;
+    }
+};
+
+class Patient : public SystemData<Patient>
+{
+public:
+    static constexpr auto file_name = "patients.data";
+
     std::string first_name;
     std::string last_name;
     std::string email;
     std::string phone_number;
     std::string address;
+
+    static bool loadOne(Patient& p, std::istream& file)
+    {
+        std::getline(file, p.first_name, ',');
+        std::getline(file, p.last_name, ',');
+        std::getline(file, p.email, ',');
+        std::getline(file, p.phone_number, ',');
+        std::getline(file, p.address);
+        return true;
+    }
+
+    static void saveOne(const Patient& p, std::ostream& file)
+    {
+        file << p.first_name << "," << p.last_name << ","
+             << p.email << "," << p.phone_number << ","
+             << p.address;
+    }
 };
 
-std::size_t appointment_next_id = 0;
-
-struct Appointment
+class Appointment : public SystemData<Appointment>
 {
-    std::size_t id{};
-    std::size_t patient_id{};
+public:
+    static constexpr auto file_name = "appointments.data";
 
+    std::size_t patient_id{};
     std::string foo;
+
+    static bool loadOne(Appointment& a, std::istream& file)
+    {
+        std::string buf;
+
+        std::getline(file, buf, ',');
+        a.patient_id = std::stoull(buf);
+
+        std::getline(file, a.foo);
+        return true;
+    }
+
+    static void saveOne(const Appointment& a, std::ostream& file)
+    {
+        file << a.patient_id << "," << a.foo;
+    }
 };
 
 // Globals
@@ -47,7 +156,7 @@ std::vector<User> users;
 std::vector<Patient> patients;
 std::vector<Appointment> appointments;
 
-const User* logged_user;
+const User* logged_user = nullptr;
 
 //region Prototypes
 bool loadData();
@@ -143,7 +252,6 @@ void registerPatient()
 {
     constexpr int PHONE_NUMBER_LENGTH = 10;
     Patient patient;
-    patient.id = ++patient_next_id;
 
     patient.first_name = input::getString("Ingresa el nombre del paciente: ");
     patient.last_name = input::getString("Ingresa los apellidos: ");
@@ -289,7 +397,7 @@ void doCheckup(const Patient* patient)
     std::cin.ignore();
     a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
 
-    a.id = ++appointment_next_id;
+    a.assignId();
     a.patient_id = patient->id;
 
     appointments.push_back(a);
@@ -330,31 +438,31 @@ void deletePatient(const Patient* patient)
 void modifyPatient(Patient* patient)
 {
     std::cin.ignore();
-    std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
+    const std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
     if (!new_name.empty())
     {
         patient->first_name = new_name;
     }
 
-    std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
+    const std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
     if (!new_last_name.empty())
     {
         patient->last_name = new_last_name;
     }
 
-    std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
+    const std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
     if (!new_email.empty())
     {
         patient->email = new_email;
     }
 
-    std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
+    const std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
     if (!new_phone_number.empty())
     {
         patient->phone_number = new_phone_number;
     }
 
-    std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
+    const std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
     if (!new_address.empty())
     {
         patient->address = new_address;
@@ -365,171 +473,44 @@ void modifyPatient(Patient* patient)
 
 //region Files In Out
 
+// -------------------------------------------------------------
+// Load / Save functions
+// -------------------------------------------------------------
 bool loadData()
 {
-    std::ifstream file;
-    //region Usuarios
-    file.open("users.data");
-    if (!file.is_open())
-    {
-        std::cout << "Hubo un error abriendo el archivo con la información de los usuarios.\n";
-        return false;
-    }
-
-    while (file.peek() != std::ifstream::traits_type::eof())
-    {
-        User user;
-        {
-            std::string id_buffer;
-            std::getline(file, id_buffer, ',');
-            user.id = std::stoull(id_buffer);
-
-            if (user_next_id < user.id) patient_next_id = user.id;
-        }
-        std::getline(file, user.username, ',');
-        std::getline(file, user.password);
-
-        users.push_back(user);
-    }
-
-    file.close();
-    if (users.empty())
+    if (!User::loadAll(users))
     {
         users.push_back({1, "admin", "admin"});
-        user_next_id = 1;
-    }
-    //endregion
-
-
-    //region Pacientes
-    file.open("patients.data");
-    if (!file.is_open())
-    {
-        std::cout << "Hubo un error abriendo el archivo con la información de los pacientes.\n";
-        return false;
+        User::next_id = 1;
     }
 
-    while (file.peek() != std::ifstream::traits_type::eof())
-    {
-        Patient patient;
-        {
-            std::string id_buffer;
-            std::getline(file, id_buffer, ',');
-            patient.id = std::stoull(id_buffer);
-
-            if (patient_next_id < patient.id) patient_next_id = patient.id;
-        }
-        std::getline(file, patient.first_name, ',');
-        std::getline(file, patient.last_name, ',');
-        std::getline(file, patient.email, ',');
-        std::getline(file, patient.phone_number, ',');
-        std::getline(file, patient.address);
-
-        patients.push_back(patient);
-    }
-
-    file.close();
-    //endregion
-
-    //region Citas
-    file.open("appointments.data");
-    if (!file.is_open())
-    {
-        std::cout << "Hubo un error abriendo el archivo con la citas realizadas.\n";
-        return false;
-    }
-
-    while (file.peek() != std::ifstream::traits_type::eof())
-    {
-        Appointment appointment;
-        {
-            std::string id_buffer;
-            std::getline(file, id_buffer, ',');
-            appointment.id = std::stoull(id_buffer);
-
-            std::getline(file, id_buffer, ',');
-            appointment.patient_id = std::stoull(id_buffer);
-
-            if (appointment_next_id < appointment.id) appointment_next_id = appointment.id;
-        }
-        std::getline(file, appointment.foo);
-
-        appointments.push_back(appointment);
-    }
-
-    file.close();
-    //endregion
+    if (!Patient::loadAll(patients)) return false;
+    if (!Appointment::loadAll(appointments)) return false;
 
     return true;
 }
 
 bool saveData()
 {
-    std::ofstream file;
+    if (!User::saveAll(users)) return false;
+    if (!Patient::saveAll(patients)) return false;
+    if (!Appointment::saveAll(appointments)) return false;
 
-    // Usuarios
-    file.open("users.temp");
-    if (!file.is_open())
-    {
-        std::cout << "No se pudó abrir el archivo para guardar la información de los usuarios.\n";
-        return false;
-    }
-    for (const auto& u : users)
-    {
-        file << u.id << ","
-            << u.username << ","
-            << u.password << "\n";
-    }
-    file.close();
-
-    // Pacientes
-    file.open("patients.temp");
-    if (!file.is_open())
-    {
-        std::cout << "No se pudó abrir el archivo para guardar la información de los pacientes.\n";
-        return false;
-    }
-    for (const auto& p : patients)
-    {
-        file << p.id << ","
-            << p.first_name << ","
-            << p.last_name << ","
-            << p.email << ","
-            << p.phone_number << ","
-            << p.address << "\n";
-    }
-
-    file.close();
-
-    file.open("appointments.temp");
-    if (!file.is_open())
-    {
-        std::cout << "No se pudó abrir el archivo para guardar la información de las citas.\n";
-        return false;
-    }
-    for (const auto& a : appointments)
-    {
-        file << a.id << ","
-            << a.patient_id << ","
-            << a.foo << "\n";
-    }
-    file.close();
-
-    // Replace older file
+    // Replace originals
     std::remove("users.data.bak");
     std::rename("users.data", "users.data.bak");
-    std::rename("users.temp", "users.data");
+    std::rename("users.data.temp", "users.data");
 
     std::remove("patients.data.bak");
     std::rename("patients.data", "patients.data.bak");
-    std::rename("patients.temp", "patients.data");
+    std::rename("patients.data.temp", "patients.data");
 
     std::remove("appointments.data.bak");
     std::rename("appointments.data", "appointments.data.bak");
-    std::rename("appointments.temp", "appointments.data");
+    std::rename("appointments.data.temp", "appointments.data");
+
     return true;
 }
-
 //endregion
 
 //region Login
@@ -544,6 +525,7 @@ static bool loginAttempt(const std::string_view username, const std::string_view
                 logged_user = &user;
                 return true;
             }
+            return false;
         }
     }
     return false;
