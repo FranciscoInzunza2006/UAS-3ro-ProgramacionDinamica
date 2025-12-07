@@ -11,7 +11,7 @@ extern size_t next_id;
 
 class Patient
 {
-    size_t id = next_id++;
+    size_t id = next_id++; // Shared with appointmets because yes
 
     std::string name;
     std::string surname;
@@ -22,6 +22,21 @@ class Patient
 
 public:
     Patient() = default;
+    Patient(size_t id, const std::string& name, const std::string& surname, const std::string& email,
+        const std::string& phone, const std::string& address)
+        : id(id),
+          name(name),
+          surname(surname),
+          email(email),
+          phone(phone),
+          address(address)
+    {
+        if (next_id <= id)
+        {
+            next_id = id+1;
+        }
+    }
+
     //Patient(const Patient& other) = delete;
     //Patient& operator=(const Patient& other) = delete;
 
@@ -37,4 +52,16 @@ public:
     [[nodiscard]] std::string getPhone() const { return phone; }
     [[nodiscard]] std::string getAddress() const { return address; }
 
+};
+
+struct Appointment
+{
+    size_t appointment_id;
+    size_t patient_id;
+
+    bool high_temp;
+    bool diabetes;
+    bool vih;
+    bool covid;
+    bool gay;
 };
