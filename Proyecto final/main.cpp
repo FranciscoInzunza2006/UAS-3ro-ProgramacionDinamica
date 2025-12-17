@@ -109,7 +109,7 @@ public:
 class Client : public SystemData<Client>
 {
 public:
-    static constexpr auto file_name = "patients.data";
+    static constexpr auto file_name = "clients.data";
 
     std::string first_name;
     std::string last_name;
@@ -138,7 +138,7 @@ public:
 class Product : public SystemData<Product>
 {
 public:
-    static constexpr auto file_name = "appointments.data";
+    static constexpr auto file_name = "products.data";
 
     std::size_t product_id{};
     std::string name;
@@ -170,50 +170,66 @@ public:
 class Venta : public SystemData<Venta>
 {
 public:
-    static constexpr auto file_name = "appointments.data";
+    static constexpr auto file_name = "sells.data";
 
-    std::size_t patient_id{};
-    std::string foo;
+    std::size_t client_id{};
+    std::size_t user_id{};
+    std::time_t timestamp{};
+    float total{};
 
-    static bool loadOne(Venta& a, std::istream& file)
+    static bool loadOne(Venta& v, std::istream& file)
     {
         std::string buf;
 
         std::getline(file, buf, ',');
-        a.patient_id = std::stoull(buf);
+        v.client_id = std::stoull(buf);
+        std::getline(file, buf, ',');
+        v.user_id = std::stoull(buf);
+        std::getline(file, buf, ',');
+        v.timestamp = std::stoll(buf);
+        std::getline(file, buf);
+        v.total = std::stof(buf);
 
-        std::getline(file, a.foo);
         return true;
     }
 
-    static void saveOne(const Venta& a, std::ostream& file)
+    static void saveOne(const Venta& v, std::ostream& file)
     {
-        file << a.patient_id << "," << a.foo;
+        file << v.client_id << ","
+            << v.user_id << ","
+            << v.timestamp << ","
+            << v.total;
     }
 };
 
 class Detalle : public SystemData<Detalle>
 {
 public:
-    static constexpr auto file_name = "appointments.data";
+    static constexpr auto file_name = "details.data";
 
-    std::size_t patient_id{};
-    std::string foo;
+    std::size_t venta_id{};
+    std::size_t product_id{};
+    int quantity{};
+    float unit_price{};
 
-    static bool loadOne(Detalle& a, std::istream& file)
+    static bool loadOne(Detalle& d, std::istream& file)
     {
         std::string buf;
 
-        std::getline(file, buf, ',');
-        a.patient_id = std::stoull(buf);
+        std::getline(file, buf, ','); d.venta_id   = std::stoull(buf);
+        std::getline(file, buf, ','); d.product_id = std::stoull(buf);
+        std::getline(file, buf, ','); d.quantity   = std::stoi(buf);
+        std::getline(file, buf);      d.unit_price = std::stof(buf);
 
-        std::getline(file, a.foo);
         return true;
     }
 
-    static void saveOne(const Detalle& a, std::ostream& file)
+    static void saveOne(const Detalle& d, std::ostream& file)
     {
-        file << a.patient_id << "," << a.foo;
+        file << d.venta_id << ","
+             << d.product_id << ","
+             << d.quantity << ","
+             << d.unit_price;
     }
 };
 
@@ -239,7 +255,7 @@ void registerPatient();
 void queryPatient();
 void showAllClients();
 
-void patientMenu(Client* patient);
+void clientMenu(Client* patient);
 void doCheckup(const Client* patient);
 void showHistory(const Client* patient);
 void modifyClient(Client* patient);
@@ -251,6 +267,9 @@ void queryProduct();
 void productMenu(Product* product);
 void modifyProduct(Product* product);
 void deleteProduct(const Product* product);
+
+Client* findClientById(std::size_t id);
+Product* findProductById(std::size_t id);
 
 bool login();
 //endregion
@@ -301,9 +320,11 @@ void mainMenu()
         switch (option)
         {
         case 1:
+            registerSell();
             break;
 
         case 2:
+            querySells();
             break;
 
         case 3:
@@ -381,7 +402,7 @@ void queryPatient()
         std::cout << "No se encontró el paciente.\n";
         return;
     }
-    patientMenu(patient);
+    clientMenu(patient);
 }
 
 void showAllClients()
@@ -410,7 +431,8 @@ void showAllClients()
 
         for (const auto& p : clients)
         {
-            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
+            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left
+                <<
                 ' ';
             std::cout << std::setw(NAME_FS) << (p.first_name + ' ' + p.last_name);
             std::cout << std::setw(EMAIL_FS) << p.email;
@@ -423,15 +445,16 @@ void showAllClients()
     }
     //endregion
 
-    menu:
+menu:
     separator();
     std::cout << "  (1) Consultar cliente\n";
     std::cout << "  (2) Dar de alta a un cliente\n";
     std::cout << "  (3) Salir\n";
     separator();
     const int option = input::getIntRange(1, 3);
-    separator();
+    if (option == 3) return;
 
+    separator();
     switch (option)
     {
     case 1:
@@ -441,8 +464,6 @@ void showAllClients()
     case 2:
         registerPatient();
         break;
-    case 3:
-        return;
     default: ;
     }
     //separator();
@@ -451,8 +472,8 @@ void showAllClients()
 
 //endregion
 
-//region Patient
-void patientMenu(Client* patient)
+//region Clientes
+void clientMenu(Client* patient)
 {
     enum OPTIONS
     {
@@ -507,37 +528,6 @@ void patientMenu(Client* patient)
     }
 }
 
-// void doCheckup(const Client* patient)
-// {
-//     Venta a;
-//
-//     std::cin.ignore();
-//     a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
-//
-//     a.assignId();
-//     a.patient_id = patient->id;
-//
-//     appointments.push_back(a);
-// }
-//
-// void showHistory(const Client* patient)
-// {
-//     bool has_history = false;
-//     for (const auto& appointment : appointments)
-//     {
-//         if (appointment.patient_id == patient->id)
-//         {
-//             has_history = true;
-//             std::cout << "ID: " << appointment.id << " COSO: " << appointment.foo << '\n';
-//         }
-//     }
-//
-//     if (!has_history)
-//     {
-//         std::cout << "El historial esta vacio.\n";
-//     }
-// }
-
 void deleteClient(const Client* patient)
 {
     clients.erase(std::vector<Client>::const_iterator(patient));
@@ -583,6 +573,130 @@ void modifyClient(Client* patient)
 
 //endregion
 
+Client* findClientById(std::size_t id)
+{
+    for (auto& c : clients)
+        if (c.id == id)
+            return &c;
+    return nullptr;
+}
+
+Product* findProductById(std::size_t id)
+{
+    for (auto& p : products)
+        if (p.id == id)
+            return &p;
+    return nullptr;
+}
+
+void registerSell()
+{
+    if (clients.empty() || products.empty())
+    {
+        std::cout << "Debe haber clientes y productos registrados.\n";
+        return;
+    }
+
+    // 1. Select client
+    const std::size_t client_id = input::getInt("ID del cliente: ");
+    Client* client = findClientById(client_id);
+
+    if (!client)
+    {
+        std::cout << "Cliente no encontrado.\n";
+        return;
+    }
+
+    Venta venta;
+    venta.assignId();
+    venta.client_id = client->id;
+    venta.user_id = logged_user->id;
+    venta.timestamp = std::time(nullptr);
+    venta.total = 0.0f;
+
+    std::vector<Detalle> detalles_tmp;
+
+    // 2. Add products
+    while (true)
+    {
+        const std::size_t product_id = input::getInt("ID del producto (0 para terminar): ");
+        if (product_id == 0) break;
+
+        Product* product = findProductById(product_id);
+        if (!product)
+        {
+            std::cout << "Producto no encontrado.\n";
+            continue;
+        }
+
+        const int quantity = input::getIntRange(1, 1000, "Unidades: ");
+
+        Detalle d;
+        d.assignId();
+        d.venta_id = venta.id;
+        d.product_id = product->id;
+        d.quantity = quantity;
+        d.unit_price = product->price;
+
+        venta.total += quantity * product->price;
+        detalles_tmp.push_back(d);
+
+        std::cout << product->name << 'x' << quantity << " agregado.\n";
+    }
+
+    if (detalles_tmp.empty())
+    {
+        std::cout << "Venta cancelada (sin productos).\n";
+        return;
+    }
+
+    // 3. Persist
+    ventas.push_back(venta);
+    for (auto& d : detalles_tmp)
+        detalles.push_back(d);
+
+    std::cout << "Venta registrada. Total: $" << venta.total << "\n";
+}
+
+void querySells()
+{
+    if (ventas.empty())
+    {
+        std::cout << "No hay ventas registradas.\n";
+        return;
+    }
+
+    for (const auto& v : ventas)
+    {
+        const Client* c = findClientById(v.client_id);
+
+        std::cout << "Venta ID: " << v.id << "\n";
+        std::cout << "Cliente: "
+                  << (c ? c->first_name + " " + c->last_name : "Desconocido")
+                  << "\n";
+
+        std::cout << "Fecha: "
+                  << std::put_time(std::localtime(&v.timestamp), "%d/%m/%Y %H:%M")
+                  << "\n";
+
+        std::cout << "Total: $" << v.total << "\n";
+        std::cout << "Productos:\n";
+
+        for (const auto& d : detalles)
+        {
+            if (d.venta_id == v.id)
+            {
+                const Product* p = findProductById(d.product_id);
+                std::cout << "  - "
+                          << (p ? p->name : "Producto eliminado")
+                          << " x" << d.quantity
+                          << " ($" << d.unit_price << ")\n";
+            }
+        }
+
+        separator();
+    }
+}
 
 //region Productos
 void showAllProducts()
@@ -609,7 +723,8 @@ void showAllProducts()
 
         for (const auto& p : products)
         {
-            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
+            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left
+                <<
                 ' ';
             std::cout << std::setw(NAME_FS) << p.name;
             std::cout << std::setw(PRICE_FS) << p.price;
@@ -621,15 +736,16 @@ void showAllProducts()
     }
     //endregion
 
-    menu:
+menu:
     separator();
     std::cout << "  (1) Consultar producto\n";
     std::cout << "  (2) Dar de alta un producto\n";
     std::cout << "  (3) Salir\n";
     separator();
     const int option = input::getIntRange(1, 3);
-    separator();
+    if (option == 3) return;
 
+    separator();
     switch (option)
     {
     case 1:
@@ -639,8 +755,6 @@ void showAllProducts()
     case 2:
         registerProduct();
         break;
-    case 3:
-        return;
     default: ;
     }
 }
@@ -767,13 +881,15 @@ void modifyProduct(Product* product)
         try
         {
             product->price = std::stof(new_price);
-        } catch (const std::exception&)
+        }
+        catch (const std::exception&)
         {
             std::cout << "Valor invalido ingresado.\n";
         }
     }
 
-    const std::string new_provider = input::getLine("Ingrese el nombre del proveedor (deje en blanco para conservar): ");
+    const std::string new_provider =
+        input::getLine("Ingrese el nombre del proveedor (deje en blanco para conservar): ");
     if (!new_provider.empty())
     {
         product->provider_name = new_provider;
