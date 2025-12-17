@@ -250,7 +250,7 @@ void registerProduct();
 void queryProduct();
 void productMenu(Product* product);
 void modifyProduct(Product* product);
-void deleteProduct(const Product* patient);
+void deleteProduct(const Product* product);
 
 bool login();
 //endregion
@@ -690,7 +690,7 @@ void registerProduct()
     product.price = input::getFloat("Ingresa el precio del producto: ");
 
     std::cin.ignore();
-    product.name = input::getLine("Ingresa el proveedor: ");
+    product.provider_name = input::getLine("Ingresa el proveedor: ");
 
     std::cout << "El producto se ha registrado con la id: " << product.id << std::endl;
     products.push_back(product);
