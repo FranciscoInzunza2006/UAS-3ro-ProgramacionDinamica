@@ -130,8 +130,8 @@ public:
     static void saveOne(const Client& p, std::ostream& file)
     {
         file << p.first_name << "," << p.last_name << ","
-             << p.email << "," << p.phone_number << ","
-             << p.address;
+            << p.email << "," << p.phone_number << ","
+            << p.address;
     }
 };
 
@@ -140,23 +140,30 @@ class Product : public SystemData<Product>
 public:
     static constexpr auto file_name = "appointments.data";
 
-    std::size_t patient_id{};
-    std::string foo;
+    std::size_t product_id{};
+    std::string name;
+    float price{};
+    std::string provider_name;
 
     static bool loadOne(Product& a, std::istream& file)
     {
         std::string buf;
 
         std::getline(file, buf, ',');
-        a.patient_id = std::stoull(buf);
+        a.product_id = std::stoull(buf);
 
-        std::getline(file, a.foo);
+        std::getline(file, a.name, ',');
+
+        std::getline(file, buf, ',');
+        a.price = std::stof(buf);
+
+        std::getline(file, a.provider_name);
         return true;
     }
 
     static void saveOne(const Product& a, std::ostream& file)
     {
-        file << a.patient_id << "," << a.foo;
+        file << a.product_id << "," << a.name << ',' << a.price << "," << a.provider_name;
     }
 };
 
@@ -212,9 +219,9 @@ public:
 
 // Globals
 std::vector<User> users;
-std::vector<Client> patients;
+std::vector<Client> clients;
 std::vector<Product> products;
-std::vector<Venta> appointments;
+std::vector<Venta> ventas;
 std::vector<Detalle> detalles;
 
 const User* logged_user = nullptr;
@@ -223,16 +230,27 @@ const User* logged_user = nullptr;
 bool loadData();
 bool saveData();
 
+void registerSell();
+void querySells();
+
 void mainMenu();
+
 void registerPatient();
 void queryPatient();
-void showPatients();
+void showAllClients();
 
 void patientMenu(Client* patient);
 void doCheckup(const Client* patient);
 void showHistory(const Client* patient);
-void modifyPatient(Client* patient);
-void deletePatient(const Client* patient);
+void modifyClient(Client* patient);
+void deleteClient(const Client* patient);
+
+void showAllProducts();
+void registerProduct();
+void queryProduct();
+void productMenu(Product* product);
+void modifyProduct(Product* product);
+void deleteProduct(const Product* patient);
 
 bool login();
 //endregion
@@ -242,12 +260,11 @@ int main()
     system("chcp 65001 && cls");
     if (!loadData())
     {
-        std::cout << "Un error ocurrió cargando los datos.";
-        return 1;
+        std::cout << "Un error ocurrió cargando los datos.\n";
     }
 
     logged_user = &users[0];
-    if (!login()) return 1;
+    //if (!login()) return 1;
 
     mainMenu();
 
@@ -264,41 +281,44 @@ void mainMenu()
         std::system("cls");
 
         separator();
-        std::cout << "Clinica el SIMI\n";
+        std::cout << "Tiendas el Paco\n";
         separator();
-        std::cout << "  (1) Registrar paciente\n";
-        std::cout << "  (2) Consultar pacientes\n";
-        std::cout << "  (3) Mostrar pacientes registrados\n";
-        std::cout << "  (4) Salir\n";
+        std::cout << "  (1) Realizar venta\n";
+        std::cout << "  (2) Historial de ventas\n";
+        std::cout << "  (3) Clientes\n";
+        std::cout << "  (4) Productos\n";
+        std::cout << "  (5) Salir\n";
         // Admin menu
         if (is_admin)
         {
-            std::cout << "  (5) Consultar usuarios\n";
+            //std::cout << "  (6) Consultar usuarios\n";
         }
 
         separator();
-        const int option = input::getIntRange(1, is_admin ? 5 : 4);
+        const int option = input::getIntRange(1, is_admin ? 6 : 5);
         separator();
 
         switch (option)
         {
         case 1:
-            registerPatient();
             break;
 
         case 2:
-            queryPatient();
             break;
 
         case 3:
-            showPatients();
+            showAllClients();
             break;
 
         case 4:
+            showAllProducts();
+            break;
+
+        case 5:
             std::cout << "Hasta pronto!\n";
             return;
 
-        case 5:
+        case 6:
             if (!is_admin) continue;
             break;
 
@@ -326,18 +346,30 @@ void registerPatient()
 
     std::cout << "El paciente se ha registrado con la id: " << patient.id << std::endl;
 
-    patients.push_back(patient);
+    clients.push_back(patient);
 }
 
 void queryPatient()
 {
     // Search by name too
-    const std::size_t needle = input::getInt("Ingresa la ID del paciente: ");
+    const std::string needle = input::getString("Ingresa la ID del paciente o su Nombre: ");
+
+    std::size_t needle_id;
+    try
+    {
+        needle_id = std::stoul(needle);
+    }
+    catch (const std::exception& e)
+    {
+        needle_id = -1;
+    }
+
 
     Client* patient = nullptr;
-    for (auto& p : patients)
+    for (auto& p : clients)
     {
-        if (p.id == needle)
+        if (p.id == needle_id || p.first_name.find(needle) != std::string::npos || p.last_name.find(needle) !=
+            std::string::npos)
         {
             patient = &p;
             break;
@@ -352,51 +384,79 @@ void queryPatient()
     patientMenu(patient);
 }
 
-void showPatients()
+void showAllClients()
 {
-    if (patients.empty())
+    if (clients.empty())
     {
         std::cout << "No hay pacientes registrados.\n";
-        return;
+        goto menu;
     }
 
-    // Field size
-    constexpr int ID_FS = 4;
-    constexpr int NAME_FS = 35;
-    constexpr int EMAIL_FS = 25;
-    constexpr int PHONE_FS = 11;
-    constexpr int ADDRESS_FS = 30;
-
-    std::cout << std::left << std::setw(ID_FS) << "ID" << ' ';
-    std::cout << std::setw(NAME_FS) << "Nombre completo";
-    std::cout << std::setw(EMAIL_FS) << "Correo";
-    std::cout << std::setw(PHONE_FS) << "Telefono";
-    std::cout << std::setw(ADDRESS_FS) << "Dirección";
-    std::cout << std::endl;
-
-    for (const auto& p : patients)
+    //region Print all patients
     {
-        std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
-            ' ';
-        std::cout << std::setw(NAME_FS) << (p.first_name + ' ' + p.last_name);
-        std::cout << std::setw(EMAIL_FS) << p.email;
-        std::cout << std::setw(PHONE_FS) << p.phone_number;
-        std::cout << std::setw(ADDRESS_FS) << p.address;
-        std::cout << '\n';
-    }
+        // Field size
+        constexpr int ID_FS = 4;
+        constexpr int NAME_FS = 35;
+        constexpr int EMAIL_FS = 25;
+        constexpr int PHONE_FS = 11;
+        constexpr int ADDRESS_FS = 30;
 
-    std::cout << std::right;
+        std::cout << std::left << std::setw(ID_FS) << "ID" << ' ';
+        std::cout << std::setw(NAME_FS) << "Nombre completo";
+        std::cout << std::setw(EMAIL_FS) << "Correo";
+        std::cout << std::setw(PHONE_FS) << "Telefono";
+        std::cout << std::setw(ADDRESS_FS) << "Dirección";
+        std::cout << std::endl;
+
+        for (const auto& p : clients)
+        {
+            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
+                ' ';
+            std::cout << std::setw(NAME_FS) << (p.first_name + ' ' + p.last_name);
+            std::cout << std::setw(EMAIL_FS) << p.email;
+            std::cout << std::setw(PHONE_FS) << p.phone_number;
+            std::cout << std::setw(ADDRESS_FS) << p.address;
+            std::cout << '\n';
+        }
+
+        std::cout << std::right;
+    }
+    //endregion
+
+    menu:
+    separator();
+    std::cout << "  (1) Consultar cliente\n";
+    std::cout << "  (2) Dar de alta a un cliente\n";
+    std::cout << "  (3) Salir\n";
+    separator();
+    const int option = input::getIntRange(1, 3);
+    separator();
+
+    switch (option)
+    {
+    case 1:
+        queryPatient();
+        break;
+
+    case 2:
+        registerPatient();
+        break;
+    case 3:
+        return;
+    default: ;
+    }
+    //separator();
+    //input::waitForInput();
 }
 
 //endregion
 
-//region Patient menu
+//region Patient
 void patientMenu(Client* patient)
 {
     enum OPTIONS
     {
-        CHECKUP = 1,
-        HISTORY,
+        HISTORY = 1,
         MODIFY,
         DELETE,
         EXIT,
@@ -407,7 +467,7 @@ void patientMenu(Client* patient)
         std::system("cls");
 
         separator();
-        std::cout << "Menu de paciente\n";
+        std::cout << "Menu de cliente\n";
         separator();
         std::cout << "ID: " << patient->id << "\n";
         std::cout << "Nombre completo: " << patient->first_name << ' ' << patient->last_name << "\n";
@@ -415,8 +475,7 @@ void patientMenu(Client* patient)
         std::cout << "Teléfono: " << patient->phone_number << "\n";
         std::cout << "Dirección: " << patient->address << "\n";
         separator();
-        std::cout << "  (" << CHECKUP << ") Realizar chequeo\n";
-        std::cout << "  (" << HISTORY << ") Mostrar historial medico\n";
+        std::cout << "  (" << HISTORY << ") Mostrar historial de compras\n";
         std::cout << "  (" << MODIFY << ") Modificar información\n";
         std::cout << "  (" << DELETE << ") Eliminar paciente\n";
         std::cout << "  (" << EXIT << ") Salir\n";
@@ -428,21 +487,17 @@ void patientMenu(Client* patient)
         separator();
         switch (option)
         {
-        case CHECKUP:
-            doCheckup(patient);
-            break;
-
         case HISTORY:
-            showHistory(patient);
+            //showHistory(patient);
             break;
 
         case MODIFY:
-            modifyPatient(patient);
+            modifyClient(patient);
             break;
 
         case DELETE:
-            deletePatient(patient);
-            std::cout << "Paciente eliminado.\n";
+            deleteClient(patient);
+            std::cout << "Cliente eliminado.\n";
             return;
 
         default: ;
@@ -452,46 +507,46 @@ void patientMenu(Client* patient)
     }
 }
 
-void doCheckup(const Client* patient)
+// void doCheckup(const Client* patient)
+// {
+//     Venta a;
+//
+//     std::cin.ignore();
+//     a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
+//
+//     a.assignId();
+//     a.patient_id = patient->id;
+//
+//     appointments.push_back(a);
+// }
+//
+// void showHistory(const Client* patient)
+// {
+//     bool has_history = false;
+//     for (const auto& appointment : appointments)
+//     {
+//         if (appointment.patient_id == patient->id)
+//         {
+//             has_history = true;
+//             std::cout << "ID: " << appointment.id << " COSO: " << appointment.foo << '\n';
+//         }
+//     }
+//
+//     if (!has_history)
+//     {
+//         std::cout << "El historial esta vacio.\n";
+//     }
+// }
+
+void deleteClient(const Client* patient)
 {
-    Venta a;
-
-    std::cin.ignore();
-    a.foo = input::getLine("Imagina que realizamos la consulta, escribe el resultado: ");
-
-    a.assignId();
-    a.patient_id = patient->id;
-
-    appointments.push_back(a);
-}
-
-void showHistory(const Client* patient)
-{
-    bool has_history = false;
-    for (const auto& appointment : appointments)
-    {
-        if (appointment.patient_id == patient->id)
-        {
-            has_history = true;
-            std::cout << "ID: " << appointment.id << " COSO: " << appointment.foo << '\n';
-        }
-    }
-
-    if (!has_history)
-    {
-        std::cout << "El historial esta vacio.\n";
-    }
-}
-
-void deletePatient(const Client* patient)
-{
-    patients.erase(std::vector<Client>::const_iterator(patient));
+    clients.erase(std::vector<Client>::const_iterator(patient));
 
     // If the id is -1 the patient won't be saved... Nah, just nuke it
     //patient.id = -1;
 }
 
-void modifyPatient(Client* patient)
+void modifyClient(Client* patient)
 {
     std::cin.ignore();
     const std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
@@ -512,7 +567,8 @@ void modifyPatient(Client* patient)
         patient->email = new_email;
     }
 
-    const std::string new_phone_number = input::getLine("Ingrese el numero de telefono (deje en blanco para conservar): ");
+    const std::string new_phone_number = input::getLine(
+        "Ingrese el numero de telefono (deje en blanco para conservar): ");
     if (!new_phone_number.empty())
     {
         patient->phone_number = new_phone_number;
@@ -522,6 +578,205 @@ void modifyPatient(Client* patient)
     if (!new_address.empty())
     {
         patient->address = new_address;
+    }
+}
+
+//endregion
+
+
+//region Productos
+void showAllProducts()
+{
+    if (products.empty())
+    {
+        std::cout << "No hay productos registrados.\n";
+        goto menu;
+    }
+
+    //region Print all products
+    {
+        // Field size
+        constexpr int ID_FS = 4;
+        constexpr int NAME_FS = 35;
+        constexpr int PRICE_FS = 8;
+        constexpr int PROVIDER_FS = 35;
+
+        std::cout << std::left << std::setw(ID_FS) << "ID" << ' ';
+        std::cout << std::setw(NAME_FS) << "Nombre";
+        std::cout << std::setw(PRICE_FS) << "Precio";
+        std::cout << std::setw(PROVIDER_FS) << "Proveedor";
+        std::cout << std::endl;
+
+        for (const auto& p : products)
+        {
+            std::cout << std::right << std::setw(ID_FS) << std::setfill('0') << p.id << std::setfill(' ') << std::left <<
+                ' ';
+            std::cout << std::setw(NAME_FS) << p.name;
+            std::cout << std::setw(PRICE_FS) << p.price;
+            std::cout << std::setw(PROVIDER_FS) << p.provider_name;
+            std::cout << '\n';
+        }
+
+        std::cout << std::right;
+    }
+    //endregion
+
+    menu:
+    separator();
+    std::cout << "  (1) Consultar producto\n";
+    std::cout << "  (2) Dar de alta un producto\n";
+    std::cout << "  (3) Salir\n";
+    separator();
+    const int option = input::getIntRange(1, 3);
+    separator();
+
+    switch (option)
+    {
+    case 1:
+        queryProduct();
+        break;
+
+    case 2:
+        registerProduct();
+        break;
+    case 3:
+        return;
+    default: ;
+    }
+}
+
+void queryProduct()
+{
+    // Search by name too
+    const std::string needle = input::getString("Ingresa la ID del producto o su Nombre: ");
+
+    std::size_t needle_id;
+    try
+    {
+        needle_id = std::stoul(needle);
+    }
+    catch (const std::exception& e)
+    {
+        needle_id = -1;
+    }
+
+
+    Product* product = nullptr;
+    for (auto& p : products)
+    {
+        if (p.id == needle_id || p.name.find(needle) != std::string::npos)
+        {
+            product = &p;
+            break;
+        }
+    }
+
+    if (product == nullptr)
+    {
+        std::cout << "No se encontró el producto.\n";
+        return;
+    }
+    productMenu(product);
+}
+
+void registerProduct()
+{
+    Product product;
+    product.assignId();
+
+    std::cin.ignore();
+    product.name = input::getLine("Ingresa el nombre del producto: ");
+
+    product.price = input::getFloat("Ingresa el precio del producto: ");
+
+    std::cin.ignore();
+    product.name = input::getLine("Ingresa el proveedor: ");
+
+    std::cout << "El producto se ha registrado con la id: " << product.id << std::endl;
+    products.push_back(product);
+}
+
+void productMenu(Product* product)
+{
+    enum OPTIONS
+    {
+        MODIFY = 1,
+        DELETE,
+        EXIT,
+    };
+
+    while (true)
+    {
+        std::system("cls");
+
+        separator();
+        std::cout << "Menu de producto\n";
+        separator();
+        std::cout << "ID: " << product->id << "\n";
+        std::cout << "Nombre: " << product->name << "\n";
+        std::cout << "Precio: $" << product->price << "\n";
+        std::cout << "Proveedor: " << product->provider_name << "\n";
+        separator();
+        std::cout << "  (" << MODIFY << ") Modificar información\n";
+        std::cout << "  (" << DELETE << ") Eliminar paciente\n";
+        std::cout << "  (" << EXIT << ") Salir\n";
+
+        separator();
+        const int option = input::getIntRange(1, EXIT);
+        if (option == EXIT) return;
+
+        separator();
+        switch (option)
+        {
+        case MODIFY:
+            modifyProduct(product);
+            break;
+
+        case DELETE:
+            deleteProduct(product);
+            std::cout << "Cliente eliminado.\n";
+            return;
+
+        default: ;
+        }
+        separator();
+        input::waitForInput();
+    }
+}
+
+void deleteProduct(const Product* product)
+{
+    products.erase(std::vector<Product>::const_iterator(product));
+
+    // If the id is -1 the patient won't be saved... Nah, just nuke it
+    //patient.id = -1;
+}
+
+void modifyProduct(Product* product)
+{
+    std::cin.ignore();
+    const std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
+    if (!new_name.empty())
+    {
+        product->name = new_name;
+    }
+
+    const std::string new_price = input::getLine("Ingrese el precio (deje en blanco para conservar): ");
+    if (!new_price.empty())
+    {
+        try
+        {
+            product->price = std::stof(new_price);
+        } catch (const std::exception&)
+        {
+            std::cout << "Valor invalido ingresado.\n";
+        }
+    }
+
+    const std::string new_provider = input::getLine("Ingrese el nombre del proveedor (deje en blanco para conservar): ");
+    if (!new_provider.empty())
+    {
+        product->provider_name = new_provider;
     }
 }
 
@@ -540,8 +795,10 @@ bool loadData()
         users.push_back(admin);
     }
 
-    if (!Client::loadAll(patients)) return false;
-    if (!Venta::loadAll(appointments)) return false;
+    if (!Client::loadAll(clients)) return false;
+    if (!Product::loadAll(products)) return false;
+    if (!Venta::loadAll(ventas)) return false;
+    if (Detalle::loadAll(detalles)) return false;
 
     return true;
 }
@@ -549,16 +806,21 @@ bool loadData()
 bool saveData()
 {
     if (!User::saveAll(users)) return false;
-    if (!Client::saveAll(patients)) return false;
-    if (!Venta::saveAll(appointments)) return false;
+    if (!Client::saveAll(clients)) return false;
+    if (!Venta::saveAll(ventas)) return false;
+    if (!Detalle::saveAll(detalles)) return false;
+    if (!Product::saveAll(products)) return false;
 
     // Replace originals
     User::updateFiles();
+    Product::updateFiles();
     Client::updateFiles();
     Venta::updateFiles();
+    Detalle::updateFiles();
 
     return true;
 }
+
 //endregion
 
 //region Login

@@ -36,6 +36,28 @@ namespace input
         return number;
     }
 
+    float getFloat(const std::string& message) {
+        return getFloatRange(-999999.99f, 999999.99f, message);
+    }
+
+    float getFloatRange(const float min, const float max, const std::string& message) {
+        std::cout << message;
+
+        float number;
+        if (!(std::cin >> number)) {
+            std::cout << "¡Valor invalido ingresado!\n";
+            clearInputStream();
+            return getFloatRange(min, max, message);
+        }
+
+        if (number < min || number > max) {
+            std::cout << "¡Valor fuera del rango! " << min << '-' << max << '\n';
+            return getFloatRange(min, max, message);
+        }
+
+        return number;
+    }
+
     std::string getString(const std::string& message) {
         return getStringMaxLength(message.max_size(), message);
     }
