@@ -12,14 +12,6 @@
 
 #include "util.hpp"
 
-//
-// Created by Franc on 26/11/2025.
-//
-
-// -------------------------------------------------------------
-// SystemData: CRTP base class
-// Each Derived class gets its own next_id and file_name
-// -------------------------------------------------------------
 template <typename T>
 class SystemData
 {
@@ -246,20 +238,15 @@ const User* logged_user = nullptr;
 bool loadData();
 bool saveData();
 
-void registerSell();
-void querySells();
-
 void mainMenu();
 
-void registerPatient();
-void queryPatient();
 void showAllClients();
-
-void clientMenu(Client* patient);
-void doCheckup(const Client* patient);
-void showHistory(const Client* patient);
-void modifyClient(Client* patient);
-void deleteClient(const Client* patient);
+void registerClient();
+void queryClient();
+void clientMenu(Client* client);
+void showHistory(const Client* client);
+void modifyClient(Client* client);
+void deleteClient(const Client* client);
 
 void showAllProducts();
 void registerProduct();
@@ -270,6 +257,8 @@ void deleteProduct(const Product* product);
 
 Client* findClientById(std::size_t id);
 Product* findProductById(std::size_t id);
+void registerSales();
+void querySales();
 
 bool login();
 //endregion
@@ -320,11 +309,11 @@ void mainMenu()
         switch (option)
         {
         case 1:
-            registerSell();
+            registerSales();
             break;
 
         case 2:
-            querySells();
+            querySales();
             break;
 
         case 3:
@@ -350,7 +339,7 @@ void mainMenu()
     }
 }
 
-void registerPatient()
+void registerClient()
 {
     constexpr int PHONE_NUMBER_LENGTH = 10;
     Client patient;
@@ -370,7 +359,7 @@ void registerPatient()
     clients.push_back(patient);
 }
 
-void queryPatient()
+void queryClient()
 {
     // Search by name too
     const std::string needle = input::getString("Ingresa la ID del paciente o su Nombre: ");
@@ -458,11 +447,11 @@ menu:
     switch (option)
     {
     case 1:
-        queryPatient();
+        queryClient();
         break;
 
     case 2:
-        registerPatient();
+        registerClient();
         break;
     default: ;
     }
@@ -473,7 +462,7 @@ menu:
 //endregion
 
 //region Clientes
-void clientMenu(Client* patient)
+void clientMenu(Client* client)
 {
     enum OPTIONS
     {
@@ -490,11 +479,11 @@ void clientMenu(Client* patient)
         separator();
         std::cout << "Menu de cliente\n";
         separator();
-        std::cout << "ID: " << patient->id << "\n";
-        std::cout << "Nombre completo: " << patient->first_name << ' ' << patient->last_name << "\n";
-        std::cout << "Correo: " << patient->email << "\n";
-        std::cout << "Teléfono: " << patient->phone_number << "\n";
-        std::cout << "Dirección: " << patient->address << "\n";
+        std::cout << "ID: " << client->id << "\n";
+        std::cout << "Nombre completo: " << client->first_name << ' ' << client->last_name << "\n";
+        std::cout << "Correo: " << client->email << "\n";
+        std::cout << "Teléfono: " << client->phone_number << "\n";
+        std::cout << "Dirección: " << client->address << "\n";
         separator();
         std::cout << "  (" << HISTORY << ") Mostrar historial de compras\n";
         std::cout << "  (" << MODIFY << ") Modificar información\n";
@@ -509,15 +498,15 @@ void clientMenu(Client* patient)
         switch (option)
         {
         case HISTORY:
-            //showHistory(patient);
+            showHistory(client);
             break;
 
         case MODIFY:
-            modifyClient(patient);
+            modifyClient(client);
             break;
 
         case DELETE:
-            deleteClient(patient);
+            deleteClient(client);
             std::cout << "Cliente eliminado.\n";
             return;
 
@@ -528,137 +517,50 @@ void clientMenu(Client* patient)
     }
 }
 
-void deleteClient(const Client* patient)
+void deleteClient(const Client* client)
 {
-    clients.erase(std::vector<Client>::const_iterator(patient));
+    clients.erase(std::vector<Client>::const_iterator(client));
 
     // If the id is -1 the patient won't be saved... Nah, just nuke it
     //patient.id = -1;
 }
 
-void modifyClient(Client* patient)
+void modifyClient(Client* client)
 {
     std::cin.ignore();
     const std::string new_name = input::getLine("Ingrese el nombre (deje en blanco para conservar): ");
     if (!new_name.empty())
     {
-        patient->first_name = new_name;
+        client->first_name = new_name;
     }
 
     const std::string new_last_name = input::getLine("Ingrese los apellidos (deje en blanco para conservar): ");
     if (!new_last_name.empty())
     {
-        patient->last_name = new_last_name;
+        client->last_name = new_last_name;
     }
 
     const std::string new_email = input::getLine("Ingrese el correo (deje en blanco para conservar): ");
     if (!new_email.empty())
     {
-        patient->email = new_email;
+        client->email = new_email;
     }
 
     const std::string new_phone_number = input::getLine(
         "Ingrese el numero de telefono (deje en blanco para conservar): ");
     if (!new_phone_number.empty())
     {
-        patient->phone_number = new_phone_number;
+        client->phone_number = new_phone_number;
     }
 
     const std::string new_address = input::getLine("Ingrese la dirección (deje en blanco para conservar): ");
     if (!new_address.empty())
     {
-        patient->address = new_address;
+        client->address = new_address;
     }
 }
 
-//endregion
-
-Client* findClientById(std::size_t id)
-{
-    for (auto& c : clients)
-        if (c.id == id)
-            return &c;
-    return nullptr;
-}
-
-Product* findProductById(std::size_t id)
-{
-    for (auto& p : products)
-        if (p.id == id)
-            return &p;
-    return nullptr;
-}
-
-void registerSell()
-{
-    if (clients.empty() || products.empty())
-    {
-        std::cout << "Debe haber clientes y productos registrados.\n";
-        return;
-    }
-
-    // 1. Select client
-    const std::size_t client_id = input::getInt("ID del cliente: ");
-    Client* client = findClientById(client_id);
-
-    if (!client)
-    {
-        std::cout << "Cliente no encontrado.\n";
-        return;
-    }
-
-    Venta venta;
-    venta.assignId();
-    venta.client_id = client->id;
-    venta.user_id = logged_user->id;
-    venta.timestamp = std::time(nullptr);
-    venta.total = 0.0f;
-
-    std::vector<Detalle> detalles_tmp;
-
-    // 2. Add products
-    while (true)
-    {
-        const std::size_t product_id = input::getInt("ID del producto (0 para terminar): ");
-        if (product_id == 0) break;
-
-        Product* product = findProductById(product_id);
-        if (!product)
-        {
-            std::cout << "Producto no encontrado.\n";
-            continue;
-        }
-
-        const int quantity = input::getIntRange(1, 1000, "Unidades: ");
-
-        Detalle d;
-        d.assignId();
-        d.venta_id = venta.id;
-        d.product_id = product->id;
-        d.quantity = quantity;
-        d.unit_price = product->price;
-
-        venta.total += quantity * product->price;
-        detalles_tmp.push_back(d);
-
-        std::cout << product->name << 'x' << quantity << " agregado.\n";
-    }
-
-    if (detalles_tmp.empty())
-    {
-        std::cout << "Venta cancelada (sin productos).\n";
-        return;
-    }
-
-    // 3. Persist
-    ventas.push_back(venta);
-    for (auto& d : detalles_tmp)
-        detalles.push_back(d);
-
-    std::cout << "Venta registrada. Total: $" << venta.total << "\n";
-}
-
-void querySells()
+void showHistory(const Client* client)
 {
     if (ventas.empty())
     {
@@ -668,11 +570,11 @@ void querySells()
 
     for (const auto& v : ventas)
     {
-        const Client* c = findClientById(v.client_id);
+        if (v.client_id != client->id) continue;
 
         std::cout << "Venta ID: " << v.id << "\n";
         std::cout << "Cliente: "
-                  << (c ? c->first_name + " " + c->last_name : "Desconocido")
+                  << client->first_name + " " + client->last_name
                   << "\n";
 
         std::cout << "Fecha: "
@@ -697,6 +599,8 @@ void querySells()
         separator();
     }
 }
+
+//endregion
 
 //region Productos
 void showAllProducts()
@@ -896,6 +800,133 @@ void modifyProduct(Product* product)
     }
 }
 
+//endregion
+
+//region Ventas
+Client* findClientById(std::size_t id)
+{
+    for (auto& c : clients)
+        if (c.id == id)
+            return &c;
+    return nullptr;
+}
+
+Product* findProductById(std::size_t id)
+{
+    for (auto& p : products)
+        if (p.id == id)
+            return &p;
+    return nullptr;
+}
+
+void registerSales()
+{
+    if (clients.empty() || products.empty())
+    {
+        std::cout << "Debe haber clientes y productos registrados.\n";
+        return;
+    }
+
+    // 1. Select client
+    const std::size_t client_id = input::getInt("ID del cliente: ");
+    Client* client = findClientById(client_id);
+
+    if (!client)
+    {
+        std::cout << "Cliente no encontrado.\n";
+        return;
+    }
+
+    Venta venta;
+    venta.assignId();
+    venta.client_id = client->id;
+    venta.user_id = logged_user->id;
+    venta.timestamp = std::time(nullptr);
+    venta.total = 0.0f;
+
+    std::vector<Detalle> detalles_tmp;
+
+    // 2. Add products
+    while (true)
+    {
+        const std::size_t product_id = input::getInt("ID del producto (0 para terminar): ");
+        if (product_id == 0) break;
+
+        Product* product = findProductById(product_id);
+        if (!product)
+        {
+            std::cout << "Producto no encontrado.\n";
+            continue;
+        }
+
+        const int quantity = input::getIntRange(1, 1000, "Unidades: ");
+
+        Detalle d;
+        d.assignId();
+        d.venta_id = venta.id;
+        d.product_id = product->id;
+        d.quantity = quantity;
+        d.unit_price = product->price;
+
+        venta.total += static_cast<float>(quantity) * product->price;
+        detalles_tmp.push_back(d);
+
+        std::cout << product->name << 'x' << quantity << " agregado.\n";
+    }
+
+    if (detalles_tmp.empty())
+    {
+        std::cout << "Venta cancelada (sin productos).\n";
+        return;
+    }
+
+    // 3. Persist
+    ventas.push_back(venta);
+    for (auto& d : detalles_tmp)
+        detalles.push_back(d);
+
+    std::cout << "Venta registrada. Total: $" << venta.total << "\n";
+}
+
+void querySales()
+{
+    if (ventas.empty())
+    {
+        std::cout << "No hay ventas registradas.\n";
+        return;
+    }
+
+    for (const auto& v : ventas)
+    {
+        const Client* c = findClientById(v.client_id);
+
+        std::cout << "Venta ID: " << v.id << "\n";
+        std::cout << "Cliente: "
+                  << (c ? c->first_name + " " + c->last_name : "Desconocido")
+                  << "\n";
+
+        std::cout << "Fecha: "
+                  << std::put_time(std::localtime(&v.timestamp), "%d/%m/%Y %H:%M")
+                  << "\n";
+
+        std::cout << "Total: $" << v.total << "\n";
+        std::cout << "Productos:\n";
+
+        for (const auto& d : detalles)
+        {
+            if (d.venta_id == v.id)
+            {
+                const Product* p = findProductById(d.product_id);
+                std::cout << "  - "
+                          << (p ? p->name : "Producto eliminado")
+                          << " x" << d.quantity
+                          << " ($" << d.unit_price << ")\n";
+            }
+        }
+
+        separator();
+    }
+}
 //endregion
 
 //region Files In Out
