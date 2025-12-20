@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 #include "classes.hpp"
-#include "unit_1.hpp"
+#include "programs.hpp"
 #include "util.hpp"
 
 int main()
@@ -16,10 +16,19 @@ int main()
     {
         Unidad("Unidad 1", {
                    Program("Calculadora", Calculadora::main),
-                   Program("Menu", Menu::main)
+                   Program("Menu", Menu::main),
+                   Program("Calculadora de IMC", IMC::main),
+                   Program("Fibonacci", Fibonacci::main),
+                   Program("Estadísticas de nombre", CosoConPalabras::main),
+
                }),
         Unidad("Unidad 2", {
                    Program("Login", Login::main),
+                   Program("Estadísticas de oración", Counter::main),
+                   Program("Filtro de chat de Mercado Libre", ChatFilter::main),
+               }),
+        Unidad("Unidad 3", {
+                   Program("Exámen", Exam::main),
                })
     };
 

@@ -7,6 +7,6 @@ add_executable(Classes_test
         main.cpp
         util.cpp
         util.hpp
-        unit_1.cpp
-        unit_1.hpp
+        programs.cpp
+        programs.hpp
 )
